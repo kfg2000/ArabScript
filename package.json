@@ -1,0 +1,27 @@
+{
+  "name": "arabscript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "arabScript.js",
+  "type": "module",
+  "scripts": {
+    "test": "c8 node_modules/.bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kfg2000/ArabScript.git"
+  },
+  "author": "Khalid Alghunaim",
+  "license": "ISC",
+  "dependencies": {
+    "ohm-js": "^15.3.0"
+  },
+  "devDependencies": {
+    "c8": "^7.4.0",
+    "mocha": "^8.2.1"
+  },
+  "bugs": {
+    "url": "https://github.com/kfg2000/ArabScript/issues"
+  },
+  "homepage": "https://github.com/kfg2000/ArabScript#readme"
+}
