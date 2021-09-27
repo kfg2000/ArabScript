@@ -1,0 +1,31 @@
+arabScript {
+    Program               = Statement*
+    Statement             =  varKeywords id "= ١"                                               --varDecInit
+                            | varKeywords id                                                     --varDec
+                            | Var "= ١"                                                             --assignExp
+                            
+   
+    numlit                = digit+ "." digit+                                                        --float
+                            | digit+                                                                 --int
+    boollit               = "sweet" | "sour"
+    stringlit             = "\"" char* "\""
+    char                  = "\\n"
+                            | "\\'"
+                            | "\\\""
+                            | "\\\\"
+                            | "\\u{" hexDigit hexDigit? hexDigit? hexDigit? hexDigit? hexDigit?  "}"  --hex
+                            | ~"\"" ~"\\" any
+    Var                   = Property
+                            | id
+    Property              = Var ".key(" (Var | numlit | stringlit | boollit) ")"                       --dotMemberExp
+                            | Var "["digit+"]"                                                         --memberExp
+    varKeywords           = "دع" | "ثابت" | "متغير"
+    id                    = letter (alnum | "&")*
+
+    space                 += "( *)" (~"(* )" any)* "(* )"                                                  --longComment
+                          | "( *)" (~"\n" any)* ("\n" | end)                                               --comment
+    logop                 = "&&" | "||"
+    relop                 = "<=" | "<" | "==" | "!=" | ">=" | ">"
+    addop                 = "+" | "-"
+    mulop                 = "*"| "/"| "%"
+  }
