@@ -1,5 +1,15 @@
 # ArabScript
 
+## Currently working on:
+- Ohm without classes (add classes after project is complete without it)
+
+## TODOs (later):
+- ASTs
+- Analyzer
+- Generator
+- classes
+- site to code in arabscript and it translates the code to javascript
+
 ## Introduction
 
 TBD
