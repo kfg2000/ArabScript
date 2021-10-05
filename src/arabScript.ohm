@@ -3,8 +3,26 @@ arabScript {
     Statement             = varKeyword id "="  Exp                                             --varDecInit
                             | varKeyword id                                                     --varDec
                             | Var "=" Exp  														 --assignExp
+                         	| SwitchStatement
+                            | IfStatement
+                            | WhileStatement
+                            | ForStatement
                             | Exp
-                            
+    BeginToEnd			  = "{" Statement* "}"
+    IfStatement			  = "لو" "(" Exp ")" BeginToEnd ElseifStatement* ElseStatement?
+    ElseifStatement       = "ولو" "(" Exp ")" BeginToEnd
+    ElseStatement         = "آخر" BeginToEnd
+    WhileStatement        = "بينما" "(" Exp ")" BeginToEnd
+    
+	ForStatement          = "ل" "(" ForArgs ")" BeginToEnd											 --forArgs
+    					  | "ل" "(" Var Var ")" BeginToEnd											 --forOf
+    ForArgs               = varKeyword id "=" Exp "؛" Exp "؛" SliceCrement
+    SliceCrement          = (id "+=" AddOp | id "-=" AddOp )                                         --binary
+                            | (id"++" | id"--" )                                                     --postfix
+    SwitchStatement       = "تبديل" "("Var")" "{" Case+ Defaultcase? "}"
+    Case             	  = "حالة" Exp ":" Statement*
+    Defaultcase           = "خلاف ذلك" ":" Statement*
+
     Exp                   = Exp logop Joint                                                          --binary
                             | Joint
     Joint                 = Joint relop AddOp                                                        --binary
@@ -35,7 +53,8 @@ arabScript {
                             | ~"\"" ~"\\" any
     Var                   = id
     varKeyword           = "دع" | "ثابت" | "متغير"
-    id                    = letter (alnum | "&")*
+    keyword               = varKeyword | "لو" | "ولو" | "آخر" | "ل" | "بينما" | "تبديل" | "حالة" | "خلاف ذلك"
+    id                    = ~keyword letter (alnum | "&")*
 
     space                 += "//" (~"\n" any)* ("\n" | end)                                               --comment
     logop                 = "&&" | "||"
