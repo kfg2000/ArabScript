@@ -3,25 +3,35 @@ arabScript {
     Statement             = varKeyword id "="  Exp                                             --varDecInit
                             | varKeyword id                                                     --varDec
                             | Var "=" Exp  														 --assignExp
-                         	| SwitchStatement
+                            | SwitchStatement
+                         	| FunctionCall
+                            | ReturnStatement
+                         	| FunctionDec
                             | IfStatement
                             | WhileStatement
                             | ForStatement
+                            | continue
+                            | break
                             | Exp
     BeginToEnd			  = "{" Statement* "}"
+    FunctionCall          = Var "(" Arguments ")"
+    FunctionDec           = "دالة" id "(" Parameters ")" BeginToEnd
+    ReturnStatement       = "عد" Exp?
     IfStatement			  = "لو" "(" Exp ")" BeginToEnd ElseifStatement* ElseStatement?
     ElseifStatement       = "ولو" "(" Exp ")" BeginToEnd
     ElseStatement         = "آخر" BeginToEnd
+
     WhileStatement        = "بينما" "(" Exp ")" BeginToEnd
-    
+
 	ForStatement          = "ل" "(" ForArgs ")" BeginToEnd											 --forArgs
-    					  | "ل" "(" Var Var ")" BeginToEnd											 --forOf
+    					  | "ل" "(" id Var ")" BeginToEnd											 --forOf
     ForArgs               = varKeyword id "=" Exp "؛" Exp "؛" SliceCrement
     SliceCrement          = (id "+=" AddOp | id "-=" AddOp )                                         --binary
                             | (id"++" | id"--" )                                                     --postfix
     SwitchStatement       = "تبديل" "("Var")" "{" Case+ Defaultcase? "}"
     Case             	  = "حالة" Exp ":" Statement*
     Defaultcase           = "خلاف ذلك" ":" Statement*
+
 
     Exp                   = Exp logop Joint                                                          --binary
                             | Joint
@@ -33,9 +43,12 @@ arabScript {
                             | Exponential
     Exponential           = Factor "**" Exponential                                                   --binary
                             | Factor
-    Factor                = ("-") Factor                                                           --negation
+    Factor                = FunctionCall
+							| ("-") Factor                                                           --negation
                             | ("!") Factor                                                           --boolNegation
                             | "(" Exp ")"                                                            --parens
+                            | "[" Arguments "]"                                                      --arrayLit
+                            | "{" DictValues "}" 													--objLit
                             | numlit
                             | stringlit
                             | boollit
@@ -51,10 +64,22 @@ arabScript {
                             | "\\\\"
                             | "\\u{" hexDigit hexDigit? hexDigit? hexDigit? hexDigit? hexDigit?  "}"  --hex
                             | ~"\"" ~"\\" any
-    Var                   = id
-    varKeyword           = "دع" | "ثابت" | "متغير"
+    Var                   = Property
+    						| id
+    Property              = Var "." Var                                                                 --dotMemberExp
+                            | Var "["Exp"]" 															--memberExp
+    varKeyword            = "دع" | "ثابت" | "متغير"
     keyword               = varKeyword | "لو" | "ولو" | "آخر" | "ل" | "بينما" | "تبديل" | "حالة" | "خلاف ذلك"
     id                    = ~keyword letter (alnum | "&")*
+
+    break                 = "قف" ~alnum
+    continue              = "استمر" ~alnum
+
+
+    Arguments             = ListOf<Exp, ",">
+    Parameters            = ListOf<id, ",">
+    DictValues            = ListOf<KeyValue, ",">
+    KeyValue              = Exp ":" Exp
 
     space                 += "//" (~"\n" any)* ("\n" | end)                                               --comment
     logop                 = "&&" | "||"

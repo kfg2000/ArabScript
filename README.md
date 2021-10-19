@@ -8,6 +8,7 @@
 - Analyzer
 - Generator
 - classes
+- try catch 
 - site to code in arabscript and it translates the code to javascript
 
 ## Introduction
