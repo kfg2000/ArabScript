@@ -5,6 +5,7 @@
   "main": "arabScript.js",
   "type": "module",
   "scripts": {
+    "lint": "node_modules/.bin/eslint src",
     "test": "c8 node_modules/.bin/mocha"
   },
   "repository": {
@@ -14,11 +15,15 @@
   "author": "Khalid Alghunaim",
   "license": "ISC",
   "dependencies": {
-    "ohm-js": "^15.3.0"
+    "ohm-js": "^15.4.1"
   },
   "devDependencies": {
-    "c8": "^7.4.0",
-    "mocha": "^8.2.1"
+    "c8": "^7.6.0",
+    "eslint": "^7.22.0",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "mocha": "^8.3.2",
+    "prettier": "2.2.1"
   },
   "bugs": {
     "url": "https://github.com/kfg2000/ArabScript/issues"
