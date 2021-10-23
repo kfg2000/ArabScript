@@ -4,6 +4,7 @@ arabScript {
                             | varKeyword id "؛"                                                     --varDec
                             | Var "=" Exp "؛"   												    --assignExp
                             | SwitchStatement
+                            | ClassDec
                          	| FunctionCall "؛" 														--functionCall 
                             | ReturnStatement "؛" 													--return
                          	| FunctionDec
@@ -14,6 +15,8 @@ arabScript {
                             | break "؛" 															--break
                             | Exp "؛" 																--exp
     BeginToEnd			  = "{" Statement* "}"
+    ClassDec			  = classKeyword "{" Constructor Statement* "}"
+    Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
     FunctionCall          = Var "(" Arguments ")"
     FunctionDec           = functionKeyword id "(" Parameters ")" BeginToEnd
     ReturnStatement       = returnKeyword Exp?
@@ -25,7 +28,7 @@ arabScript {
 
 	ForStatement          = forKeyword "(" ForArgs ")" BeginToEnd									 --forArgs
     					  | forKeyword "(" id Var ")" BeginToEnd									 --forOf
-    ForArgs               = ("دع" | "متغير") id "=" Exp "؛" Exp "؛" SliceCrement
+    ForArgs               = varKeyword id "=" Exp "؛" Exp "؛" SliceCrement
     SliceCrement          = (id "+=" AddOp | id "-=" AddOp )                                         --binary
                             | (id"++" | id"--" )                                                     --postfix
     SwitchStatement       = switchKeyword "("Var")" "{" Case+ Defaultcase? "}"
@@ -41,14 +44,14 @@ arabScript {
                             | Term
     Term                  = Term mulop Exponential                                                   --binary
                             | Exponential
-    Exponential           = Factor "**" Exponential                                                  --binary
+    Exponential           = Factor "**" Exponential                                                   --binary
                             | Factor
     Factor                = FunctionCall
 							| ("-") Factor                                                           --negation
                             | ("!") Factor                                                           --boolNegation
                             | "(" Exp ")"                                                            --parens
                             | "[" Arguments "]"                                                      --arrayLit
-                            | "{" DictValues "}" 													--objLit
+                            | "{" DictValues "}" 													 --objLit
                             | numlit
                             | stringlit
                             | boollit
@@ -66,17 +69,19 @@ arabScript {
                             | ~"\"" ~"\\" any
     Var                   = Property
     						| id
-    Property              = Var "." Var                                                                 --dotMemberExp
-                            | Var "["Exp"]" 															--memberExp
+    Property              = Var "." Var                                                               --dotMemberExp
+                            | Var "["Exp"]" 														  --memberExp
     varKeyword            = "دع" | "ثابت" | "متغير"
     keyword               = varKeyword | boollit | break | caseKeyword | defaultKeyword | elseKeyword
                             | elseifKeyword | forKeyword | functionKeyword | ifKeyword | returnKeyword
-                            | switchKeyword | whileKeyword | continue
+                            | switchKeyword | whileKeyword | continue | classKeyword | constructorKeyword
     id                    = ~keyword letter (alnum | "&" | "-")*
 
 
     break                 = "قف" ~alnum
     continue              = "استمر" ~alnum
+    classKeyword		  = "صنف" ~alnum
+    constructorKeyword    = "منشئ" ~alnum
     caseKeyword           = "حالة" ~alnum
     defaultKeyword        = "خلاف ذلك" ~alnum
     elseKeyword           = "آخر" ~alnum
@@ -94,7 +99,7 @@ arabScript {
     DictValues            = ListOf<KeyValue, ",">
     KeyValue              = Exp ":" Exp
 
-    space                 += "//" (~"\n" any)* ("\n" | end)                                               --comment
+    space                 += "//" (~"\n" any)* ("\n" | end)                                             --comment
     logop                 = "&&" | "||"
     relop                 = "<=" | "<" | "==" | "!=" | ">=" | ">"
     addop                 = "+" | "-"

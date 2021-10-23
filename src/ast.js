@@ -27,23 +27,21 @@ export class Assignment {
   }
 }
 
+export class Class {
+  constructor(identifier, constructorBody, body) {
+    Object.assign(this, { identifier, constructorBody, body })
+  }
+}
+
+export class Constructor {
+  constructor(params, body) {
+    Object.assign(this, { params, body })
+  }
+}
+
 export class FunctionDec {
   constructor(identifier, params, body) {
     Object.assign(this, { identifier, params, body })
-  }
-}
-
-// Created during semantic analysis only!
-export class Function {
-  constructor(name) {
-    this.name = name
-  }
-}
-
-// Created during semantic analysis only!
-export class FunctionType {
-  constructor(paramTypes, returnType) {
-    Object.assign(this, { paramTypes, returnType })
   }
 }
 

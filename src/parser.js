@@ -126,6 +126,18 @@ const astBuilder = lemonScriptGrammar.createSemantics().addOperation("tree", {
   Statement_assignExp(variable, _eq, exp, _end) {
     return new ast.Assignment(variable.tree(), exp.tree())
   },
+  Statement_functionCall(call, _end) {
+    return call.tree()
+  },
+  Statement_return(returnStatement, _end) {
+    return returnStatement.tree()
+  },
+  Statement_continue(continueKeyword, _end) {
+    return continueKeyword.tree()
+  },
+  Statement_break(breakKeyword, _end) {
+    return breakKeyword.tree()
+  },
   BeginToEnd(_left, statements, _right) {
     return statements.tree()
   },
