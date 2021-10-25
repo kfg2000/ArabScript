@@ -19,6 +19,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | IfStatement
                             | WhileStatement
                             | ForStatement
+                            | SliceCrement "؛"                                                      --slice
                             | continue "؛" 															--continue
                             | break "؛" 															--break
                             | Exp "؛" 																--exp
@@ -95,7 +96,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
     continue              = "استمر" ~alnum
     classKeyword		  = "صنف" ~alnum
     newKeyword            = "جديد" ~alnum
-    thisKeyword		      = "صنف" ~alnum
+    thisKeyword		      = "هذا" ~alnum
     constructorKeyword    = "منشئ" ~alnum
     caseKeyword           = "حالة" ~alnum
     defaultKeyword        = "خلاف ذلك" ~alnum
@@ -128,15 +129,15 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
   Program(statements) {
     return new ast.Program(statements.tree())
   },
-  Statement_varDecInit(varType, identifiers, _eq, exp, _end) {
+  Statement_varDecInit(varType, identifier, _eq, exp, _end) {
     return new ast.VariableDecInit(
-      identifiers.tree(),
+      identifier.tree(),
       exp.tree(),
-      varType.tree().sourceString == "ثابت"
+      varType.tree() == "ثابت"
     )
   },
   Statement_varDec(varType, identifier, _end) {
-    return new ast.VariableDec(identifier.tree(), varType.tree().sourceString == "ثابت")
+    return new ast.VariableDec(identifier.tree(), varType.tree() == "ثابت")
   },
   Statement_assignExp(variable, _eq, exp, _end) {
     return new ast.Assignment(variable.tree(), exp.tree())
@@ -155,6 +156,9 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
   },
   Statement_exp(exp, _end) {
     return exp.tree()
+  },
+  Statement_slice(sliceCrement, _end) {
+    return sliceCrement.tree()
   },
   BeginToEnd(_left, statements, _right) {
     return statements.tree()

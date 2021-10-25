@@ -23,7 +23,7 @@ export class VariableDecInit {
 }
 
 export class VariableDec {
-  constructor(type, identifier, con) {
+  constructor(identifier, con) {
     Object.assign(this, { con, identifier })
   }
 }
@@ -120,18 +120,6 @@ export class Case {
   }
 }
 
-export class PrintStatement {
-  constructor(argument) {
-    this.argument = argument
-  }
-}
-
-// move to exp
-export class TypeOfOperator {
-  constructor(argument) {
-    this.argument = argument
-  }
-}
 
 export class ReturnStatement {
   constructor(returnValue) {
@@ -141,7 +129,7 @@ export class ReturnStatement {
 
 export class ShortReturnStatement {
   constructor() {
-    this.returnValue = Type.VOID
+    this.returnValue = undefined
   }
 }
 

@@ -12,6 +12,7 @@ arabScript {
                             | IfStatement
                             | WhileStatement
                             | ForStatement
+                            | SliceCrement "؛"                                                      --slice
                             | continue "؛" 															--continue
                             | break "؛" 															--break
                             | Exp "؛" 																--exp
@@ -88,7 +89,7 @@ arabScript {
     continue              = "استمر" ~alnum
     classKeyword		  = "صنف" ~alnum
     newKeyword            = "جديد" ~alnum
-    thisKeyword		      = "صنف" ~alnum
+    thisKeyword		      = "هذا" ~alnum
     constructorKeyword    = "منشئ" ~alnum
     caseKeyword           = "حالة" ~alnum
     defaultKeyword        = "خلاف ذلك" ~alnum
