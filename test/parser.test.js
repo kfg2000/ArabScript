@@ -1,6 +1,7 @@
 import assert from "assert"
 import util from "util"
-import parse, { syntaxIsOkay } from "../src/parser.js"
+//import parse, { syntaxIsOkay } from "../src/parser.js"
+import { syntaxIsOkay } from "../src/parser.js"
 import fs from "fs"
 
 const GOOD_TESTS = `test/cases/goodPrograms`

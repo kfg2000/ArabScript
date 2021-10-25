@@ -21,6 +21,12 @@ export class VariableDec {
   }
 }
 
+export class This {
+  constructor(variable, exp) {
+    Object.assign(this, { variable, exp })
+  }
+}
+
 export class Assignment {
   constructor(source, target) {
     Object.assign(this, { target, source })
@@ -36,6 +42,12 @@ export class Class {
 export class Constructor {
   constructor(params, body) {
     Object.assign(this, { params, body })
+  }
+}
+
+export class Object {
+  constructor(className, args) {
+    Object.assign(this, { className, args })
   }
 }
 
