@@ -1,5 +1,12 @@
 import util from "util"
 
+
+export class Bool {
+  constructor(name, value) {
+    Object.assign(this, { name, value })
+  }
+}
+
 export class Program {
   constructor(statements) {
     Object.assign(this, { statements })
@@ -45,7 +52,7 @@ export class Constructor {
   }
 }
 
-export class Object {
+export class NewObject {
   constructor(className, args) {
     Object.assign(this, { className, args })
   }
