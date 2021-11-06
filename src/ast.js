@@ -1,5 +1,45 @@
 import util from "util"
 
+// Created during semantic analysis only!
+export class Variable {
+  constructor(name, con, type) {
+    Object.assign(this, { name, con, type })
+  }
+}
+
+export class Type {
+  constructor(name) {
+    this.name = name
+  }
+  static BOOLEAN = new Type("bool")
+  static INT = new Type("int")
+  static NUMBER = new Type("number")
+  static STRING = new Type("string")
+  static FUNC = new Type("function")
+  static ARRAY = new Type("array")  
+  static OBJ = new Type("object")
+  static NONE = new Type("none")
+  static ANY = new Type("any")
+
+
+  // Equivalence: when are two types the same
+  isEquivalentTo(target) {
+    return this === target || this == ANY || target == ANY
+  }
+  // T1 assignable to T2 is when x:T1 can be assigned to y:T2. By default
+  // this is only when two types are equivalent; however, for other kinds
+  // of types there may be special rules.
+  isAssignableTo(target) {
+    return this.isEquivalentTo(target)
+  }
+}
+
+// Created during semantic analysis only!
+export class Function {
+  constructor(name) {
+    this.name = name
+  }
+}
 
 export class Bool {
   constructor(name, value) {

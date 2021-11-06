@@ -4,11 +4,8 @@
 - Ohm without classes (add classes after project is complete without it)
 
 ## TODOs (later):
-- ASTs
 - Analyzer
 - Generator
-- classes
-- try catch 
 - site to code in arabscript and it translates the code to javascript
 
 ## Introduction
@@ -19,12 +16,11 @@ TBD
 
 - Dynamically typed language
 - Variables
-- Prototypes 
+- Classes 
 - If statements
 - For/for of statements
 - While statements
 - Switch statements 
-- Error handling
 - Functions 
 - Built-in Functions like typeof and print
 
