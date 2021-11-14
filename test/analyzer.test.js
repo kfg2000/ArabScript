@@ -10,6 +10,7 @@ const semanticChecks = [
   ["assignment", "دع طس&شش؛ طس&شش = ٢؛"],
   ["object declaration", "دع اري = {١:٢،\"١١١\":١٠}؛"],
   ["array declaration", "دع اري = [١،٢،٣،٤،٥]؛"],
+  ["using member exp on an array", "دع اري = [١،٢،٣،٤،٥]؛ اري[١]؛"],
   ["using member exp", "دع دكش = {١:٢،\"عشرا\":١٠}؛ دكش[\"عشرا\"]+ دكش.عشرا؛"],
   ["using complex member exp", "دع دكش = {١:٢،\"عشرا\":[١،٢]}؛ دكش.عشرا[٠]؛"],
   ["increment and decrement", "دع ا = ١؛ ا++؛ ا--؛ ا+=١؛ ا-=١؛"],
@@ -50,40 +51,44 @@ const semanticChecks = [
     "Function call",
     " دالة بارك(ا،ب){ عد ا؛ } بارك(١،٢)؛",
   ],
-//   [
-//     "return in nested if",
-//     "When life gives you lemons try slice retTen(slice a) BEGIN JUICING Squeeze the lemon if(a == 10) BEGIN JUICING you get lemonade and a END JUICING END JUICING",
-//   ],
-//   [
-//     "break in nested if",
-//     "slice x = 20 Drink the lemonade while (x > 0) BEGIN JUICING Squeeze the lemon if(x == 10) BEGIN JUICING chop END JUICING x-- END JUICING",
-//   ],
-//   [
-//     "continue in nested if",
-//     "slice x = 20 Drink the lemonade while (x > 0) BEGIN JUICING Squeeze the lemon if(x == 10) BEGIN JUICING nextLemon END JUICING x-- END JUICING",
-//   ],
-//   [
-//     "long if",
-//     'slice x = 10 Squeeze the lemon if(x == 10) BEGIN JUICING pour("Number is 10") END JUICING Toss the lemon and do BEGIN JUICING pour("Number is not 10 or 20") END JUICING',
-//   ],
-//   [
-//     "else if",
-//     'slice x = 20 Squeeze the lemon if(x == 10) BEGIN JUICING pour("Number is 10") END JUICING Keep juicing if(x == 20) BEGIN JUICING pour("Number is 10") END JUICING Toss the lemon and do BEGIN JUICING pour("Number is not 10 or 20") END JUICING',
-//   ],
-//   [
-//     "for with args",
-//     "forEachLemon (slice i = 0; i < 5; i++) BEGIN JUICING pour(i) END JUICING",
-//   ],
+  [
+    "If statement",
+    "دع ط = ١**٢-٣٩/٢٣؛ متغير اسم = \"خالد\"؛ لو(ط>٠){ ط=٠؛}",
+  ],
+  [
+    "ِElse If statement",
+    "دع ط = ١**٢-٣٩/٢٣؛ متغير اسم = \"خالد\"؛ لو(ط>٠){ ط=٠؛} ولو(اسم == \"بدر\"){ اسم = \"خالد\"؛}",
+  ],
+  [
+    "ِElse statement",
+    "دع ط = ١**٢-٣٩/٢٣؛ متغير اسم = \"خالد\"؛ لو(ط>٠){ ط=٠؛} ولو(اسم == \"بدر\"){ اسم = \"خالد\"؛}  آخر{ اسم = \"خالد\" + ط؛ }",
+  ],
+  [
+    "While condition with continue",
+    "بينما(!(١>٢)){ استمر؛ }",
+  ],
+  [
+    "Complex While condition with break",
+    "متغير بول = صح؛ بينما(!(١>٢)&&بول){ بول = خطا؛ قف؛ }",
+  ],
+  [
+    "For with args",
+    "ل(دع ه = ١؛ ه>٠؛ه++){ ه += ٣؛ }",
+  ],
+  [
+    "For of",
+    "دع ه؛ دع ارقام = [١،٢،٣،٤]؛ ل(رقم ارقام){ ه += رقم؛ }",
+  ],
+  [
+    "Switch Statement",
+    "دع ت = ٤؛ تبديل(ت){ حالة ١: حالة ٢: حالة ٣: ١+١؛ خلاف ذلك: ٢+٢؛ }",
+  ],
+
+
 //   ["||", "pour(sweet||1<2||sour||3>4)"],
 //   ["&&", "species(sweet&&1<2&&sour&&3>4)"],
 //   ["relations", "pour(10 < 20)"],
 //   ["arithmetic", "slice x x = 4 slice y = 2 slice z = 1 pour(x + y - - z ^ y % x / y)"],
-//   ["subscript exp", "slice[] arr = [1,2,3] pour(arr[1])"],
-//   ["property exp", "<slice, slice> dict = {1:1, 2:2} slice x = dict.key(1) pour(x)"],
-//   [
-//     "array parameters",
-//     "When life gives you lemons try noLemon sumOfArray( slice[] arr, slice arrLength ) BEGIN JUICING slice x = arr[0] END JUICING",
-//   ],
 //   [
 //     "function call",
 //     "When life gives you lemons try slice nothing() BEGIN JUICING you get lemonade and 1 END JUICING nothing()",

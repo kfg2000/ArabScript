@@ -26,11 +26,11 @@ const check = self => ({
       `Expected an array or object, found ${self.type.name}`
     )
   },
-  isAnArray() {
-    must([Type.ARRAY, Type.ANY].includes(self.type), "Array expected")
-  },
   isDict() {
     must([Type.OBJ, Type.ANY].includes(self.type), "Dictionary expected")
+  },
+  isIterable() {
+    must([Type.ARRAY, Type.OBJ, Type.STRING, Type.ANY].includes(self.type), "Dictionary expected")
   },
   isNotAConstant() {
     must(!self.con, `Cannot assign to constant ${self.name}`)
@@ -79,10 +79,6 @@ class Context {
     // Whether we are in a class, so that we know whether a this
     // statement can appear here, and if so, how we typecheck it
     this.class = configuration.class ?? parent?.class ?? null
-  }
-  sees(name) {
-    // Search "outward" through enclosing scopes
-    return this.locals.has(name) || this.parent?.sees(name)
   }
   isWithinScope(name) {
     // Search "outward" through enclosing scopes
@@ -226,7 +222,7 @@ class Context {
     let newContext = this.newChild({ inLoop: true })
     
     s.iterable = this.analyze(s.iterable)
-    // cause array
+    check(s.iterable).isIterable()
     s.variable = new Variable(s.variable.name, false, Type.ANY)
     newContext.add(s.variable.name, s.variable)
 
@@ -338,8 +334,9 @@ class Context {
     e.variable = this.analyze(e.variable)
     check(e.variable).isAnArrayOrDict()
     e.exp = this.newChild({ partOfProp: false }).analyze(e.exp)
-    if(e.variable == Type.ARRAY){
-        check(e.index).isInteger()
+    console.log(e)
+    if(e.variable.type == Type.ARRAY){
+        check(e.exp).isInteger()
     }
     e.type = Type.ANY
     return e
