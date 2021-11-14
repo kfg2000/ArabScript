@@ -18,20 +18,21 @@ export class Type {
   static FUNC = new Type("function")
   static ARRAY = new Type("array")  
   static OBJ = new Type("object")
+  static CLASS = new Type("class")
   static NONE = new Type("none")
   static ANY = new Type("any")
 
 
-  // Equivalence: when are two types the same
-  isEquivalentTo(target) {
-    return this === target || this == ANY || target == ANY
-  }
-  // T1 assignable to T2 is when x:T1 can be assigned to y:T2. By default
-  // this is only when two types are equivalent; however, for other kinds
-  // of types there may be special rules.
-  isAssignableTo(target) {
-    return this.isEquivalentTo(target)
-  }
+  // // Equivalence: when are two types the same
+  // isEquivalentTo(target) {
+  //   return this === target || this == ANY || target == ANY
+  // }
+  // // T1 assignable to T2 is when x:T1 can be assigned to y:T2. By default
+  // // this is only when two types are equivalent; however, for other kinds
+  // // of types there may be special rules.
+  // isAssignableTo(target) {
+  //   return this.isEquivalentTo(target)
+  // }
 }
 
 // Created during semantic analysis only!
@@ -68,12 +69,6 @@ export class VariableDec {
   }
 }
 
-export class This {
-  constructor(variable, exp) {
-    Object.assign(this, { variable, exp })
-  }
-}
-
 export class Assignment {
   constructor(source, target) {
     Object.assign(this, { target, source })
@@ -89,6 +84,12 @@ export class Class {
 export class Constructor {
   constructor(params, body) {
     Object.assign(this, { params, body })
+  }
+}
+
+export class This {
+  constructor(variable) {
+    Object.assign(this, { variable })
   }
 }
 

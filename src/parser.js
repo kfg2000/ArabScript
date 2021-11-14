@@ -9,7 +9,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
     Program               = Statement*
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
                             | varKeyword id "؛"                                                     --varDec
-                            | Var "=" Exp "؛"   												    --assignExp
+                            | (This | Var ) "=" Exp "؛"   												    --assignExp
                             | This
                             | SwitchStatement
                             | ClassDec
@@ -24,8 +24,8 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | break "؛" 															--break
                             | Exp "؛" 																--exp
     BeginToEnd			  = "{" Statement* "}"
-    ClassDec			  = classKeyword id "{" Constructor Statement* "}"
-    This                  = Var "." thisKeyword "="  Exp "؛"
+    ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
+    This                  = Var "." thisKeyword 
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
     FunctionCall          = Var "(" Arguments ")"
     FunctionDec           = functionKeyword id "(" Parameters ")" BeginToEnd
@@ -58,7 +58,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | Factor
     Factor                = id "(" Arguments ")" newKeyword                                        --newObj
                             | FunctionCall
-							| ("-") Factor                                                           --negation
+							              | ("-") Factor                                                           --negation
                             | ("!") Factor                                                           --boolNegation
                             | "(" Exp ")"                                                            --parens
                             | "[" Arguments "]"                                                      --arrayLit
@@ -68,6 +68,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | boollit
                             | nullKeyword
                             | undefinedKeyword
+                            | This
                             | Var
     digit				  += "١"|"٧"|"٦"|"٥"|"٤"|"٣"|"٢"|"٩"|"٠"
     numlit                = digit+ "." digit+                                                        --float
@@ -89,7 +90,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | elseifKeyword | forKeyword | functionKeyword | ifKeyword | returnKeyword
                             | switchKeyword | whileKeyword | continue | classKeyword | constructorKeyword
                             | thisKeyword | nullKeyword | undefinedKeyword | newKeyword
-    id                    = ~keyword letter (alnum | "&" | "-")*
+    id                    = ~keyword letter (alnum | "&")*
 
 
     break                 = "قف" ~alnum
@@ -170,10 +171,9 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
       body.tree()
     )
   },
-  This(variable, _dot, _thisKeyword, _eq, exp, _end) {
+  This(variable, _dot, _thisKeyword) {
     return new ast.This(
-      variable.tree(),
-      exp.tree()
+      variable.tree()
     )
   },
   Constructor(_constructorBeginning, _left, params, _right, body) {
@@ -333,7 +333,7 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
     }
     return new ast.Bool(bool.sourceString, true)
   },
-  Property_dotMemberExp(field, _dot, object) {
+  Property_dotMemberExp(object, _dot, field) {
     return new ast.PropertyExpression(object.tree(), field.tree())
   },
   Property_memberExp(variable, _open, exp, _close) {

@@ -1,5 +1,5 @@
-import { Variable, Type, FunctionType, Function, ArrayType, ObjType } from "./ast.js"
-import * as stdlib from "./stdlib.js"
+import { Variable, Type, Function } from "./ast.js"
+// import * as stdlib from "./stdlib.js"
 
 function must(condition, errorMessage) {
   if (!condition) {
@@ -10,48 +10,27 @@ function must(condition, errorMessage) {
 const check = self => ({
   isNumeric() {
     must(
-      [Type.INT, Type.FLOAT].includes(self.type),
+      [Type.INT, Type.NUMBER, Type.ANY].includes(self.type),
       `Expected a number, found ${self.type.name}`
     )
   },
-  isNumericOrString() {
-    must(
-      [Type.INT, Type.FLOAT, Type.STRING].includes(self.type),
-      `Expected a number or string, found ${self.type.name}`
-    )
-  },
   isBoolean() {
-    must(self.type === Type.BOOLEAN, `Expected a boolean, found ${self.type.name}`)
+    must([Type.BOOLEAN, Type.ANY].includes(self.type), `Expected a boolean, found ${self.type.name}`)
   },
   isInteger() {
-    must(self.type === Type.INT, `Expected an integer, found ${self.type.name}`)
+    must([Type.INT, Type.ANY].includes(self.type), `Expected an integer, found ${self.type.name}`)
+  },
+  isAnArrayOrDict() {
+    must(
+      [Type.ARRAY, Type.OBJ, Type.ANY].includes(self.type),
+      `Expected an array or object, found ${self.type.name}`
+    )
   },
   isAnArray() {
-    must(self.type.constructor === ArrayType, "Array expected")
+    must([Type.ARRAY, Type.ANY].includes(self.type), "Array expected")
   },
   isDict() {
-    must(self.type.constructor === ObjType, "Dictionary expected")
-  },
-  hasSameTypeAs(other) {
-    must(self.type.isEquivalentTo(other.type), "Operands do not have the same type")
-  },
-  allHaveSameType() {
-    must(
-      self.slice(1).every(e => e.type.isEquivalentTo(self[0].type)),
-      "Not all elements have the same type"
-    )
-  },
-  allCasesHaveSameType(cases) {
-    must(
-      cases.every(c => c.caseExp.type.isEquivalentTo(self.type)),
-      "Not all cases have the same type as the expression passed in"
-    )
-  },
-  isAssignableTo(type) {
-    must(
-      type === Type.ANY || self.type.isAssignableTo(type),
-      `Cannot assign a ${self.type.name} to a ${type.name}`
-    )
+    must([Type.OBJ, Type.ANY].includes(self.type), "Dictionary expected")
   },
   isNotAConstant() {
     must(!self.con, `Cannot assign to constant ${self.name}`)
@@ -59,34 +38,17 @@ const check = self => ({
   isInsideALoop() {
     must(self.inLoop, "Break can only appear in a loop")
   },
-  isInsideAFunction(context) {
+  isInsideAFunction() {
     must(self.function, "Return can only appear in a function")
   },
+  isInsideAClass() {
+    must(self.class, "This can only appear in a class")
+  },
   isCallable() {
-    must(self.type.constructor == FunctionType, "Call of non-function")
+    must([Type.FUNC, Type.ANY].includes(self.type), "Call of non-function")
   },
-  returnsNothing() {
-    must(
-      self.type.returnType.isEquivalentTo(Type.VOID),
-      "Something should be returned here"
-    )
-  },
-  returnsSomething() {
-    must(!self.type.returnType.isEquivalentTo(Type.VOID), "Cannot return a value here")
-  },
-  isReturnableFrom(f) {
-    check(self).isAssignableTo(f.type.returnType)
-  },
-  match(targetTypes) {
-    // self is the array of arguments
-    must(
-      targetTypes.length === self.length,
-      `${targetTypes.length} argument(s) required but ${self.length} passed`
-    )
-    targetTypes.forEach((type, i) => check(self[i]).isAssignableTo(type))
-  },
-  matchParametersOf(paramTypes) {
-    check(self).match(paramTypes)
+  isFromAClass() {
+    must([Type.CLASS, Type.ANY].includes(self.type), `${self.name} is not a class that exists`)
   },
   areAllDistinct() {
     must(
@@ -103,12 +65,20 @@ class Context {
     // All local declarations. Names map to variable declarations, types, and
     // function declarations
     this.locals = new Map()
+    // Whether we are part of a property, so that we know whether to care about look ups
+    this.partOfProp = configuration.partOfProp ?? parent?.partOfProp ?? false
     // Whether we are in a loop, so that we know whether breaks and continues
     // are legal here
     this.inLoop = configuration.inLoop ?? parent?.inLoop ?? false
     // Whether we are in a function, so that we know whether a return
     // statement can appear here, and if so, how we typecheck it
     this.function = configuration.function ?? parent?.function ?? null
+    // Whether we are setting the parameters so that we dont look up new vars
+    // that are being instantiated as a parameter
+    this.setParams = configuration.setParams ?? parent?.setParams ?? false
+    // Whether we are in a class, so that we know whether a this
+    // statement can appear here, and if so, how we typecheck it
+    this.class = configuration.class ?? parent?.class ?? null
   }
   sees(name) {
     // Search "outward" through enclosing scopes
@@ -138,10 +108,21 @@ class Context {
     // except that certain fields can be overridden
     return new Context(this, configuration)
   }
+  getType(types){
+      if(types.includes(Type.STRING)||types.includes(Type.ARRAY)||types.includes(Type.OBJ)||types.includes(Type.FUNC)){
+        return Type.STRING
+      }
+
+      if(types.includes(Type.INT)||types.includes(Type.NUMBER)||types.includes(Type.BOOLEAN)||types.includes(Type.NONE)){
+        return Type.NUMBER
+      }
+
+      return Type.ANY
+  }
   analyze(node) {
+    // console.log(node)
     return this[node.constructor.name](node)
   }
-  // maybe remove imports...
   Program(p) {
     p.statements = this.analyze(p.statements)
     return p
@@ -165,17 +146,48 @@ class Context {
     s.target = this.analyze(s.target)
 
     check(s.source).isNotAConstant()
-    this.lookup(s.source).type = s.target.type
+    s.source.type = s.target.type
     return s
+  }
+  Class(c) {
+    c.class = new Variable(c.identifier.name, false, Type.CLASS)
+    this.add(c.class.name, c.class)
+
+    let newContext = this.newChild({ class: c.class, inLoop: false })
+    c.constructorBody = newContext.analyze(c.constructorBody)
+    c.body = newContext.analyze(c.body)
+    return c
+  }
+  Constructor(c) {
+    let newContext = this.newChild({setParams: true})
+    c.params = newContext.analyze(c.params)
+    newContext.setParams = false
+    c.body = newContext.analyze(c.body)
+  }
+  This(e) {
+    check(this).isInsideAClass()
+    let newContext = this.newChild({ partOfProp: true })
+    e.variable = newContext.analyze(e.variable)
+    e.type = Type.ANY
+    return e
+  }
+  NewObject(o) {
+    o.className = this.analyze(o.className)
+    check(o.className).isFromAClass()
+
+    o.args = this.analyze(o.args)
+    o.type = Type.OBJ
+    return o
   }
   FunctionDec(d) {
     const f = (d.function = new Function(d.identifier.name))
     // When entering a function body, we must reset the inLoop setting,
     // because it is possible to declare a function inside a loop!
-    const childContext = this.newChild({ inLoop: false, function: f })
+    const childContext = this.newChild({ inLoop: false, function: f, setParams: true })
     d.params = childContext.analyze(d.params)
-
+    childContext.setParams = false
     // Add before analyzing the body to allow recursion
+    f.type = Type.FUNC
     this.add(f.name, f)
     d.body = childContext.analyze(d.body)
     return d
@@ -267,8 +279,8 @@ class Context {
         check(e.left).isNotAConstant()
       }
       // create function to prioritize type (string > number > bool etc.)
-      e.type = e.left.type
-    } else if (["-", "*", "/", "%", "^", "-="].includes(e.op)) {
+      e.type = this.getType([e.left.type,e.right.type])
+    } else if (["-", "*", "/", "%", "**", "-="].includes(e.op)) {
       if (e.op === "-=") {
         check(e.left).isNotAConstant()
       }
@@ -309,7 +321,9 @@ class Context {
       a.keyValuePairs = this.analyze(a.keyValuePairs)
       check(a.keyValuePairs).areAllDistinct()
     }
+    let keys = new Set(a.keyValuePairs.map(pair => pair.key))
     a.type = Type.OBJ
+    a.keys = keys
 
     return a
   }
@@ -321,20 +335,23 @@ class Context {
   }
 
   MemberExpression(e) {
-    e.array = this.analyze(e.array)
-    check(e.array).isAnArrayOrDict()
-    e.exp = this.analyze(e.exp)
-    if(e.type == Type.ARRAY){
+    e.variable = this.analyze(e.variable)
+    check(e.variable).isAnArrayOrDict()
+    e.exp = this.newChild({ partOfProp: false }).analyze(e.exp)
+    if(e.variable == Type.ARRAY){
         check(e.index).isInteger()
     }
+    e.type = Type.ANY
     return e
   }
 
   PropertyExpression(e) {
     e.object = this.analyze(e.object)
     check(e.object).isDict()
-    e.field = this.analyze(e.field)
-    e.type = Type.OBJ
+
+    let newContext = this.newChild({ partOfProp: true })
+    e.field = newContext.analyze(e.field)
+    e.type = Type.ANY
     return e
   }
   Continue(s) {
@@ -348,10 +365,16 @@ class Context {
 
   IdentifierExpression(e) {
     // Id expressions get "replaced" with the variables they refer to
-    return this.lookup(e.name)
+    e.type = Type.ANY
+    if(this.setParams){
+      e.variable = new Variable(e.name, false, Type.ANY)
+      this.add(e.name, e.variable)
+      return e.variable
+    }
+    return this.partOfProp ? e : this.lookup(e.name)
   }
   Bool(b) {
-    b.type = this.lookup(b.type)
+    b.type = Type.BOOLEAN
     return b
   }
   Number(e) {
@@ -377,9 +400,9 @@ export default function analyze(node) {
   const initialContext = new Context()
 
   // Add in all the predefined identifiers from the stdlib module
-  const library = { ...stdlib.types, ...stdlib.functions }
-  for (const [name, type] of Object.entries(library)) {
-    initialContext.add(name, type)
-  }
+//   const library = { ...stdlib.types, ...stdlib.functions }
+//   for (const [name, type] of Object.entries(library)) {
+//     initialContext.add(name, type)
+//   }
   return initialContext.analyze(node)
 }

@@ -2,7 +2,7 @@ arabScript {
     Program               = Statement*
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
                             | varKeyword id "؛"                                                     --varDec
-                            | Var "=" Exp "؛"   												    --assignExp
+                            | (This | Var ) "=" Exp "؛"   												    --assignExp
                             | This
                             | SwitchStatement
                             | ClassDec
@@ -17,8 +17,8 @@ arabScript {
                             | break "؛" 															--break
                             | Exp "؛" 																--exp
     BeginToEnd			  = "{" Statement* "}"
-    ClassDec			  = classKeyword id "{" Constructor Statement* "}"
-    This                  = Var "." thisKeyword "="  Exp "؛"
+    ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
+    This                  = Var "." thisKeyword 
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
     FunctionCall          = Var "(" Arguments ")"
     FunctionDec           = functionKeyword id "(" Parameters ")" BeginToEnd
@@ -51,7 +51,7 @@ arabScript {
                             | Factor
     Factor                = id "(" Arguments ")" newKeyword                                        --newObj
                             | FunctionCall
-							| ("-") Factor                                                           --negation
+							              | ("-") Factor                                                           --negation
                             | ("!") Factor                                                           --boolNegation
                             | "(" Exp ")"                                                            --parens
                             | "[" Arguments "]"                                                      --arrayLit
@@ -61,6 +61,7 @@ arabScript {
                             | boollit
                             | nullKeyword
                             | undefinedKeyword
+                            | This
                             | Var
     digit				  += "١"|"٧"|"٦"|"٥"|"٤"|"٣"|"٢"|"٩"|"٠"
     numlit                = digit+ "." digit+                                                        --float
@@ -82,7 +83,7 @@ arabScript {
                             | elseifKeyword | forKeyword | functionKeyword | ifKeyword | returnKeyword
                             | switchKeyword | whileKeyword | continue | classKeyword | constructorKeyword
                             | thisKeyword | nullKeyword | undefinedKeyword | newKeyword
-    id                    = ~keyword letter (alnum | "&" | "-")*
+    id                    = ~keyword letter (alnum | "&")*
 
 
     break                 = "قف" ~alnum
