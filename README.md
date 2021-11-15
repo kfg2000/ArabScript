@@ -47,17 +47,13 @@ TBD
 | ---------- | -----------------------------|
 | break      | قف                           |
 | case       | حالة                         |
-| catch      | حدد                          |
 | class      | صنف                          |
 | const      | ثابت                         |
 | constructor| منشئ                         |
 | continue   | استمر                        |
-| default    | tbd                          |
-| delete     | مسح                          |
-| do         | قم                           |
+| default    | خلاف ذلك                      |
 | else       | آخر                          |
 | else if    | ولو                          |
-| error      | غلطة                         |
 | false      | خطا                          |
 | for        | ()ل                          |
 | function   | دالة                         |
@@ -68,7 +64,6 @@ TBD
 | return     | عد                           |
 | switch     | تبديل                        |
 | this       | هذا                          |
-| throw      | ارمي                         |
 | true       | صح                           |
 | try        | جرب                          |
 | undefiend  | مجهول                        |

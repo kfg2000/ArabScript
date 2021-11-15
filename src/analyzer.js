@@ -27,16 +27,16 @@ const check = self => ({
     )
   },
   isDict() {
-    must([Type.OBJ, Type.ANY].includes(self.type), "Dictionary expected")
+    must([Type.OBJ, Type.ANY].includes(self.type), "Object expected")
   },
   isIterable() {
-    must([Type.ARRAY, Type.OBJ, Type.STRING, Type.ANY].includes(self.type), "Dictionary expected")
+    must([Type.ARRAY, Type.OBJ, Type.STRING, Type.ANY].includes(self.type), "Iterable expected")
   },
   isNotAConstant() {
     must(!self.con, `Cannot assign to constant ${self.name}`)
   },
   isInsideALoop() {
-    must(self.inLoop, "Break can only appear in a loop")
+    must(self.inLoop, "Breaks and Continues can only appear in a loop")
   },
   isInsideAFunction() {
     must(self.function, "Return can only appear in a function")
@@ -116,7 +116,6 @@ class Context {
       return Type.ANY
   }
   analyze(node) {
-    // console.log(node)
     return this[node.constructor.name](node)
   }
   Program(p) {
@@ -265,6 +264,25 @@ class Context {
     return s
   }
 
+  PrintStatement(p){
+    p.argument = this.analyze(p.argument)
+    return p
+  }
+
+  TypeOfOperator(t){
+    t.argument = this.analyze(t.argument)
+    return t
+  }
+
+  Ternary(t){
+    t.bool = this.analyze(t.bool)
+    check(t.bool).isBoolean()
+
+    t.expIfTrue = this.analyze(t.expIfTrue)
+    t.expIfFalse = this.analyze(t.expIfFalse)
+    return t
+  }
+
   BinaryExp(e) {
     e.left = this.analyze(e.left)
     e.right = this.analyze(e.right)
@@ -274,7 +292,6 @@ class Context {
       if (e.op === "+=") {
         check(e.left).isNotAConstant()
       }
-      // create function to prioritize type (string > number > bool etc.)
       e.type = this.getType([e.left.type,e.right.type])
     } else if (["-", "*", "/", "%", "**", "-="].includes(e.op)) {
       if (e.op === "-=") {
@@ -288,6 +305,7 @@ class Context {
     }
     return e
   }
+
   UnaryExpression(e) {
     e.operand = this.analyze(e.operand)
     if (["++", "--"].includes(e.op)) {
@@ -303,8 +321,6 @@ class Context {
     return e
   }
 
-  
-
   ArrayLit(a) {
     //Check if the literal is empty, then we keep the type it came with.
     // If a.type is undefined we could just assign it to TYPE.any
@@ -312,6 +328,7 @@ class Context {
     a.type = Type.ARRAY
     return a
   }
+  
   ObjLit(a) {
     if (a.keyValuePairs.length > 0) {
       a.keyValuePairs = this.analyze(a.keyValuePairs)
@@ -334,7 +351,6 @@ class Context {
     e.variable = this.analyze(e.variable)
     check(e.variable).isAnArrayOrDict()
     e.exp = this.newChild({ partOfProp: false }).analyze(e.exp)
-    console.log(e)
     if(e.variable.type == Type.ARRAY){
         check(e.exp).isInteger()
     }
@@ -369,6 +385,14 @@ class Context {
       return e.variable
     }
     return this.partOfProp ? e : this.lookup(e.name)
+  }
+  Undefined(u) {
+    u.type = Type.NONE
+    return u
+  }
+  Null(n) {
+    n.type = Type.NONE
+    return n
   }
   Bool(b) {
     b.type = Type.BOOLEAN

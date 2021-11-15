@@ -9,7 +9,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
     Program               = Statement*
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
                             | varKeyword id "؛"                                                     --varDec
-                            | (This | Var ) "=" Exp "؛"   												    --assignExp
+                            | (This | Var ) "=" Exp "؛"   										    --assignExp
                             | This
                             | SwitchStatement
                             | ClassDec
@@ -19,6 +19,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | IfStatement
                             | WhileStatement
                             | ForStatement
+                            | Print "؛"                                                             --print
                             | SliceCrement "؛"                                                      --slice
                             | continue "؛" 															--continue
                             | break "؛" 															--break
@@ -45,8 +46,12 @@ const grammar = ohm.grammar(String.raw`arabScript {
     Case             	  = caseKeyword Exp ":" Statement*
     Defaultcase           = defaultKeyword ":" Statement*
 
+    Print                 = printKeyword "("Exp")"
+    TypeOf                = typeofKeyword "("Exp")"
 
-    Exp                   = Exp logop Joint                                                          --binary
+    Exp                   = Exp "؟" Log ":" Log                                                      --ternary
+                            | Log
+    Log                   = Log logop Joint                                                          --binary
                             | Joint
     Joint                 = Joint relop AddOp                                                        --binary
                             | AddOp
@@ -56,9 +61,10 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | Exponential
     Exponential           = Factor "**" Exponential                                                   --binary
                             | Factor
-    Factor                = id "(" Arguments ")" newKeyword                                        --newObj
+    Factor                = TypeOf
+                            | id "(" Arguments ")" newKeyword                                        --newObj
                             | FunctionCall
-							              | ("-") Factor                                                           --negation
+							| ("-") Factor                                                          --negation
                             | ("!") Factor                                                           --boolNegation
                             | "(" Exp ")"                                                            --parens
                             | "[" Arguments "]"                                                      --arrayLit
@@ -90,6 +96,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | elseifKeyword | forKeyword | functionKeyword | ifKeyword | returnKeyword
                             | switchKeyword | whileKeyword | continue | classKeyword | constructorKeyword
                             | thisKeyword | nullKeyword | undefinedKeyword | newKeyword
+                            | printKeyword | typeofKeyword
     id                    = ~keyword letter (alnum | "&")*
 
 
@@ -111,6 +118,8 @@ const grammar = ohm.grammar(String.raw`arabScript {
     whileKeyword          = "بينما" ~alnum
     nullKeyword           = "نل" ~alnum
     undefinedKeyword      = "مجهول" ~alnum
+    printKeyword          = "طبع" ~alnum
+    typeofKeyword         = "نوع" ~alnum
 
 
     Arguments             = ListOf<Exp, "،">
@@ -160,6 +169,9 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
   },
   Statement_slice(sliceCrement, _end) {
     return sliceCrement.tree()
+  },
+  Statement_print(printStatement, _end) {
+    return printStatement.tree()
   },
   BeginToEnd(_left, statements, _right) {
     return statements.tree()
@@ -231,7 +243,16 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
   Defaultcase(_defaultKeyword, _semi, statements) {
     return statements.tree()
   },
-  Exp_binary(left, op, right) {
+  Print(_print, _left, argument, _right) {
+    return new ast.PrintStatement(argument.tree())
+  },
+  TypeOf(_typeof, _left, argument, _right) {
+    return new ast.TypeOfOperator(argument.tree())
+  },
+  Exp_ternary(bool, _questionmark, expIfTrue, _semi, expIfFalse) {
+    return new ast.Ternary(bool.tree(),expIfTrue.tree(),expIfFalse.tree())
+  },
+  Log_binary(left, op, right) {
     return new ast.BinaryExp(left.tree(), op.sourceString, right.tree())
   },
   Joint_binary(left, op, right) {
@@ -332,6 +353,12 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
       return new ast.Bool(bool.sourceString, false)
     }
     return new ast.Bool(bool.sourceString, true)
+  },
+  undefinedKeyword(_undefined) {
+    return new ast.Undefined()
+  },
+  nullKeyword(_null) {
+    return new ast.Null()
   },
   Property_dotMemberExp(object, _dot, field) {
     return new ast.PropertyExpression(object.tree(), field.tree())

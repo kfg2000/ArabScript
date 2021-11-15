@@ -146,6 +146,8 @@ export class ForArgs {
   }
 }
 
+export class Undefined {}
+export class Null {}
 
 // our version of switch forces the first right case to end the statement,
 // so no need for break
@@ -171,6 +173,24 @@ export class ReturnStatement {
 export class ShortReturnStatement {
   constructor() {
     this.returnValue = undefined
+  }
+}
+
+export class PrintStatement {
+  constructor(argument) {
+    this.argument = argument
+  }
+}
+
+export class TypeOfOperator {
+  constructor(argument) {
+    this.argument = argument
+  }
+}
+
+export class Ternary {
+  constructor(bool, expIfTrue, expIfFalse) {
+    Object.assign(this, { bool, expIfTrue, expIfFalse })
   }
 }
 

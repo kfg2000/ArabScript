@@ -2,7 +2,7 @@ arabScript {
     Program               = Statement*
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
                             | varKeyword id "؛"                                                     --varDec
-                            | (This | Var ) "=" Exp "؛"   												    --assignExp
+                            | (This | Var ) "=" Exp "؛"   										    --assignExp
                             | This
                             | SwitchStatement
                             | ClassDec
@@ -12,6 +12,7 @@ arabScript {
                             | IfStatement
                             | WhileStatement
                             | ForStatement
+                            | Print "؛"                                                             --print
                             | SliceCrement "؛"                                                      --slice
                             | continue "؛" 															--continue
                             | break "؛" 															--break
@@ -38,8 +39,12 @@ arabScript {
     Case             	  = caseKeyword Exp ":" Statement*
     Defaultcase           = defaultKeyword ":" Statement*
 
+    Print                 = printKeyword "("Exp")"
+    TypeOf                = typeofKeyword "("Exp")"
 
-    Exp                   = Exp logop Joint                                                          --binary
+    Exp                   = Exp "؟" Log ":" Log                                                      --ternary
+                            | Log
+    Log                   = Log logop Joint                                                          --binary
                             | Joint
     Joint                 = Joint relop AddOp                                                        --binary
                             | AddOp
@@ -49,9 +54,10 @@ arabScript {
                             | Exponential
     Exponential           = Factor "**" Exponential                                                   --binary
                             | Factor
-    Factor                = id "(" Arguments ")" newKeyword                                        --newObj
+    Factor                = TypeOf
+                            | id "(" Arguments ")" newKeyword                                        --newObj
                             | FunctionCall
-							              | ("-") Factor                                                           --negation
+							| ("-") Factor                                                          --negation
                             | ("!") Factor                                                           --boolNegation
                             | "(" Exp ")"                                                            --parens
                             | "[" Arguments "]"                                                      --arrayLit
@@ -83,6 +89,7 @@ arabScript {
                             | elseifKeyword | forKeyword | functionKeyword | ifKeyword | returnKeyword
                             | switchKeyword | whileKeyword | continue | classKeyword | constructorKeyword
                             | thisKeyword | nullKeyword | undefinedKeyword | newKeyword
+                            | printKeyword | typeofKeyword
     id                    = ~keyword letter (alnum | "&")*
 
 
@@ -104,6 +111,8 @@ arabScript {
     whileKeyword          = "بينما" ~alnum
     nullKeyword           = "نل" ~alnum
     undefinedKeyword      = "مجهول" ~alnum
+    printKeyword          = "طبع" ~alnum
+    typeofKeyword         = "نوع" ~alnum
 
 
     Arguments             = ListOf<Exp, "،">
