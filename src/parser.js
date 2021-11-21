@@ -10,7 +10,6 @@ const grammar = ohm.grammar(String.raw`arabScript {
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
                             | varKeyword id "؛"                                                     --varDec
                             | (This | Var ) "=" Exp "؛"   										    --assignExp
-                            | This
                             | SwitchStatement
                             | ClassDec
                          	| FunctionCall "؛" 														--functionCall 

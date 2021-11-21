@@ -158,6 +158,7 @@ class Context {
     c.params = newContext.analyze(c.params)
     newContext.setParams = false
     c.body = newContext.analyze(c.body)
+    return c
   }
   This(e) {
     check(this).isInsideAClass()
