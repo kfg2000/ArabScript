@@ -18,7 +18,7 @@ export default function generate(program) {
       if (!mapping.has(entity)) {
         mapping.set(entity, mapping.size + 1)
       }
-      return `${entity.name}_${mapping.get(entity)}`
+      return `$var_${mapping.get(entity)}`
     }
   })(new Map())
 
