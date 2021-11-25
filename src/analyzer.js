@@ -272,6 +272,7 @@ class Context {
 
   TypeOfOperator(t){
     t.argument = this.analyze(t.argument)
+    t.type = Type.STRING
     return t
   }
 
@@ -281,6 +282,7 @@ class Context {
 
     t.expIfTrue = this.analyze(t.expIfTrue)
     t.expIfFalse = this.analyze(t.expIfFalse)
+    t.type = this.getType([t.expIfTrue.type, t.expIfFalse.type])
     return t
   }
 

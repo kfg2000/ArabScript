@@ -1,7 +1,7 @@
 arabScript {
     Program               = Statement*
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
-                            | varKeyword id "؛"                                                     --varDec
+                            | ("دع" | "متغير") id "؛"                                                     --varDec
                             | (This | Var ) "=" Exp "؛"   										    --assignExp
                             | SwitchStatement
                             | ClassDec
@@ -18,9 +18,9 @@ arabScript {
                             | Exp "؛" 																--exp
     BeginToEnd			  = "{" Statement* "}"
     ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
-    This                  = Var "." thisKeyword 
+    This                  = Var thisKeyword 
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
-    FunctionCall          = Var "(" Arguments ")"
+    FunctionCall          = (This | Var ) "(" Arguments ")"
     FunctionDec           = functionKeyword id "(" Parameters ")" BeginToEnd
     ReturnStatement       = returnKeyword Exp?
     IfStatement			  = ifKeyword "(" Exp ")" BeginToEnd ElseifStatement* ElseStatement?
@@ -123,5 +123,5 @@ arabScript {
     logop                 = "&&" | "||"
     relop                 = "<=" | "<" | "==" | "!=" | ">=" | ">"
     addop                 = "+" | "-"
-    mulop                 = "*"| "/"| "%" | "٪"
+    mulop                 = "*"| "/"| "%"| "٪"
   }

@@ -88,23 +88,6 @@ const fixtures = [
 //     `,
 //   },
 //   {
-//     name: "very small",
-//     source: `
-//       slice x = 10 * 2
-//       x++
-//       x += 1
-//       pour(species(x))
-//       -x
-//     `,
-//     expected: dedent`
-//       let x_1 = (10 * 2);
-//       x_1++;
-//       x_1 += 1;
-//       console.log(typeof x_1);
-//       -(x_1);
-//     `,
-//   },
-//   {
 //     name: "small",
 //     source: `
 //       slice x = 10 * 2
@@ -123,6 +106,7 @@ const fixtures = [
 //       console.log((((y_2 && y_2) || false) || ((x_1 * 2) !== 5)));
 //     `,
 //   },
+
   {
     name: "declaration then assignment and constant",
     source: `
@@ -132,6 +116,7 @@ const fixtures = [
         ثابت ب = -ا؛
         طبع(ب)؛
         -(-(ب+ا))==٠؛
+        -ا؛
     `,
     expected: dedent`
       let var_1;
@@ -140,6 +125,18 @@ const fixtures = [
       const var_2 = -(var_1);
       console.log(var_2);
       (-(-((var_2 + var_1))) === 0);
+      -(var_1);
+    `,
+  },
+    {
+    name: "Ternary",
+    source: `
+      متغير اسم = ١>٢ ؟ "خالد" : مجهول؛
+      ١>٢ ؟ "خالد" : نل؛
+    `,
+    expected: dedent`
+      let var_1 = (1 > 2) ? "خالد" : undefined;
+      (1 > 2) ? "خالد" : null;
     `,
   },
   {
@@ -172,13 +169,15 @@ const fixtures = [
     source: `
         صنف كلب {
             منشئ(اسم،عمر){
-                اسم.هذا = اسم؛
-                عمر.هذا = عمر؛
+                اسم هذا = اسم؛
+                عمر هذا = عمر؛
             }
             دالة بارك(){
                 طبع("ووف")؛
             }
+            اسم هذا؛
         }
+        كلب("خالد"،٧) جديد؛
         دع خالد = كلب("خالد"،٧) جديد؛
         خالد. اسم = "احمد"؛
         خالد. بارك()؛
@@ -192,10 +191,12 @@ const fixtures = [
         function var_4() {
             console.log("ووف");
         }
+        this.property_3;
     }
+    new var_1("خالد", 7);
     let var_5 = new var_1("خالد", 7);
-    var_5.property_3 = "احمد";
-    var_5.property_4();
+    var_5.property_4 = "احمد";
+    var_5.property_5();
     `,
   },
   {
@@ -268,7 +269,7 @@ const fixtures = [
         دالة شيء(ا){
             عد ا؛
         }
-        دع ب = شيء(ا)؛
+        دع ب =١ + شيء(ا)؛
         ولا&شيء()؛
     `,
     expected: dedent`
@@ -279,7 +280,7 @@ const fixtures = [
       function var_3(var_4) {
         return var_4;
       }
-      let var_5 = var_3(var_1);
+      let var_5 = (1 + var_3(var_1));
       var_2();
     `,
   },
@@ -296,59 +297,69 @@ const fixtures = [
       console.log((var_2[0] === var_1[2]));
     `,
   },
-//   {
-//     name: "for loops",
-//     source: `
-//         forEachLemon (slice i = 0; i < 5; i++)
-//             BEGIN JUICING
-//             pour(i)
-//             nextLemon
-//             END JUICING
-//         forEachLemon (slice i = 0; i < 5; i+=2)
-//             BEGIN JUICING
-//             pour(i)
-//             END JUICING
-//     `,
-//     expected: dedent`
-//       for (let i_1 = 0; (i_1 < 5); i_1++) {
-//         console.log(i_1);
-//         continue;
-//       }
-//       for (let i_2 = 0; (i_2 < 5); i_2 += 2) {
-//         console.log(i_2);
-//       }
-//     `,
-//   },
-//   {
-//     name: "switch",
-//     source: `
-//     slice number = 2
-//     Pick (number)
-//         BEGIN JUICING
-//         lemonCase 2
-//             pour("its even")
-//             chop
-//         lemonCase 1
-//             pour("its odd")
-//             chop
-//         citrusLimon
-//             pour("je ne sais pas")
-//         END JUICING
-//     `,
-//     expected: dedent`
-//       let number_1 = 2;
-//       switch(number_1) {
-//         case 2:
-//           console.log("its even");
-//           break;
-//         case 1:
-//           console.log("its odd");
-//           break;
-//         default:
-//           console.log("je ne sais pas");
-//       }
-//     `,
-//   },
+  {
+    name: "for loops",
+    source: `
+        ل(دع ه = ١؛ ه>١٠؛ه++){
+            طبع(ه)؛
+            ه--؛
+        }
+        ل(دع ه = ١؛ ه>١٠؛ه+=٥){
+            طبع(ه)؛
+            ه+=١؛
+        }
+        دع ارقام = [١،٢،٣،٤]؛
+        ل(رقم ارقام){
+            طبع(نوع(رقم))؛
+        }
+    `,
+    expected: dedent`
+      for (let var_1 = 1; (var_1 > 10); var_1++) {
+        console.log(var_1);
+        var_1--;
+      }
+      for (let var_2 = 1; (var_2 > 10); var_2 += 5) {
+        console.log(var_2);
+        var_2 += 1;
+      }
+      let var_3 = [1,2,3,4];
+      for (const var_4 of var_3) {
+          console.log(typeof var_4);
+      }
+    `,
+  },
+  {
+    name: "switch",
+    source: `
+    دع ا؛
+    دع ت = ٥؛
+    تبديل(ت){
+        حالة ١:
+            ا= ١؛
+            قف؛
+        حالة ٢: 
+            ا= ٥؛
+        حالة ٣: 
+            طبع(ت)؛
+        خلاف ذلك: ٢+٢؛
+    }
+    `,
+    expected: dedent`
+      let var_1;
+      let var_2 = 5;
+      switch(var_2) {
+        case 1:
+          var_1 = 1;
+          break;
+        case 2:
+          var_1 = 5;
+        case 3:
+          console.log(var_2);
+        default:
+          (2 + 2);
+      }
+    `,
+  },
 ]
 
 describe("The code generator", () => {

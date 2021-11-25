@@ -8,7 +8,7 @@ import * as ast from "./ast.js"
 const grammar = ohm.grammar(String.raw`arabScript {
     Program               = Statement*
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
-                            | varKeyword id "؛"                                                     --varDec
+                            | ("دع" | "متغير") id "؛"                                                     --varDec
                             | (This | Var ) "=" Exp "؛"   										    --assignExp
                             | SwitchStatement
                             | ClassDec
@@ -25,9 +25,9 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | Exp "؛" 																--exp
     BeginToEnd			  = "{" Statement* "}"
     ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
-    This                  = Var "." thisKeyword 
+    This                  = Var thisKeyword 
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
-    FunctionCall          = Var "(" Arguments ")"
+    FunctionCall          = (This | Var ) "(" Arguments ")"
     FunctionDec           = functionKeyword id "(" Parameters ")" BeginToEnd
     ReturnStatement       = returnKeyword Exp?
     IfStatement			  = ifKeyword "(" Exp ")" BeginToEnd ElseifStatement* ElseStatement?
@@ -146,7 +146,7 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
     )
   },
   Statement_varDec(varType, identifier, _end) {
-    return new ast.VariableDec(identifier.tree(), varType.tree() == "ثابت")
+    return new ast.VariableDec(identifier.tree(), false)
   },
   Statement_assignExp(variable, _eq, exp, _end) {
     return new ast.Assignment(variable.tree(), exp.tree())
@@ -182,7 +182,7 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
       body.tree()
     )
   },
-  This(variable, _dot, _thisKeyword) {
+  This(variable, _thisKeyword) {
     return new ast.This(
       variable.tree()
     )

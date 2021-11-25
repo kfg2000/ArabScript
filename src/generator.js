@@ -30,7 +30,7 @@ export default function generate(program) {
   })(new Map())
 
   const gen = node => {
-    // console.log(node.constructor.name)
+    // console.log(node)
     return generators[node.constructor.name](node)
   }
 
@@ -48,13 +48,7 @@ export default function generate(program) {
     },
     VariableDec(d) {
       expStandalone = false
-      if (isParam) {
-        let variable = `${gen(d.variable)}`
-        expStandalone = true
-        return variable
-      }
-      
-      output.push(`${d.con ? 'const' : 'let'} ${gen(d.variable)};`)
+      output.push(`let ${gen(d.variable)};`)
       expStandalone = true
     },
     Assignment(s) {
@@ -165,7 +159,7 @@ export default function generate(program) {
       const iterable = targetName(s.iterable)
       const variable = targetName(s.variable)
       output.push(
-        `for (const ${iterable} of ${variable}) {`
+        `for (const ${variable} of ${iterable}) {`
       )
       gen(s.body)
       output.push("}")
@@ -203,11 +197,11 @@ export default function generate(program) {
     Ternary(e){
       if (expStandalone) {
         expStandalone = false
-        output.push(`${gen(e.bool)} ? ${gen(e.expIfTrue)} : ${gen(e.expIfTrue)};`)
+        output.push(`${gen(e.bool)} ? ${gen(e.expIfTrue)} : ${gen(e.expIfFalse)};`)
         expStandalone = true
         return
       }
-      return `(${gen(e.left)} ${op} ${gen(e.right)})`
+      return `${gen(e.bool)} ? ${gen(e.expIfTrue)} : ${gen(e.expIfFalse)}`
     },
     BinaryExp(e) {
       const op = { "==": "===", "!=": "!==" }[e.op] ?? e.op
@@ -290,6 +284,12 @@ export default function generate(program) {
     Array(a) {
       return a.map(gen)
     },
+    Undefined(u){
+        return `undefined`
+    },
+    Null(u){
+        return `null`
+    }
   }
 
   gen(program)
