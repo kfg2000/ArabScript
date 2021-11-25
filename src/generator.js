@@ -10,19 +10,27 @@ export default function generate(program) {
   var isParam = false
 
   // Variable and function names in JS will be suffixed with _1, _2, _3,
-  // etc. This is because "switch", for example, is a legal name in Carlos,
-  // but not in JS. So, the Carlos variable "switch" must become something
-  // like "switch_1". We handle this by mapping each name to its suffix.
   const targetName = (mapping => {
     return entity => {
       if (!mapping.has(entity)) {
         mapping.set(entity, mapping.size + 1)
       }
-      return `$var_${mapping.get(entity)}`
+      return `var_${mapping.get(entity)}`
+    }
+  })(new Map())
+
+  // Property names in JS will not be suffixed with _1, _2, _3, for now it will though
+  const propertyName = (mapping => {
+    return entity => {
+      if (!mapping.has(entity)) {
+        mapping.set(entity, mapping.size + 1)
+      }
+      return `property_${mapping.get(entity)}`
     }
   })(new Map())
 
   const gen = node => {
+    // console.log(node.constructor.name)
     return generators[node.constructor.name](node)
   }
 
@@ -44,9 +52,9 @@ export default function generate(program) {
         let variable = `${gen(d.variable)}`
         expStandalone = true
         return variable
-      } else {
-        output.push(`${d.con ? 'const' : 'let'} ${gen(d.variable)};`)
       }
+      
+      output.push(`${d.con ? 'const' : 'let'} ${gen(d.variable)};`)
       expStandalone = true
     },
     Assignment(s) {
@@ -62,12 +70,12 @@ export default function generate(program) {
         output.push(`}`)
     },
     Constructor(c) {
-        output.push(`construcotr ${gen(c.params).join(", ")}{`)
+        output.push(`constructor (${gen(c.params).join(", ")}){`)
         gen(c.body)
         output.push(`}`)
     },
     This(e) {
-        const name = targetName(e.variable)
+        const name = propertyName(e.variable)
         if (expStandalone) {
             expStandalone = false
             output.push(`this.${name};`)
@@ -77,7 +85,7 @@ export default function generate(program) {
         }
     },
     NewObject(o) {
-        const className = targetName(o.class)
+        const className = targetName(o.className)
         if (expStandalone) {
             expStandalone = false
             output.push(`new ${className}(${gen(o.args).join(", ")});`)
@@ -129,8 +137,10 @@ export default function generate(program) {
       for (let i = 1; i < s.cases.length; i++) {
         gen(s.cases[i])
       }
-      output.push(`} else {`)
-      gen(s.elseBlock)
+      if(s.elseBlock.length !== 0){
+        output.push(`} else {`)
+        gen(s.elseBlock)
+      }
       output.push(`}`)
     },
     IfCase(s) {
@@ -241,16 +251,16 @@ export default function generate(program) {
       return `[${gen(a.elements).join(",")}]`
     },
     ObjLit(o) {
-      return `{${gen(o.keyValuePairs).join(",")}}`
+      return `{${gen(o.keyValuePairs).join(", ")}}`
     },
     ObjPair(p) {
       return `${gen(p.key)}: ${gen(p.value)}`
     },
     MemberExpression(e) {
-      return `(${gen(e.variable)}[${e.exp}])`
+      return `${gen(e.variable)}[${gen(e.exp)}]`
     },
     PropertyExpression(e) {
-      return `(${gen(e.object)}[${e.field}])`
+      return `${gen(e.object)}.${gen(e.field)}`
     },
     Continue(s) {
       output.push("continue;")
@@ -260,6 +270,9 @@ export default function generate(program) {
     },
     Variable(v) {
       return targetName(v)
+    },
+    IdentifierExpression(v) {
+      return propertyName(v)
     },
     Bool(b) {
       return `${b.value}`

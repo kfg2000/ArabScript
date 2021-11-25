@@ -130,7 +130,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
     logop                 = "&&" | "||"
     relop                 = "<=" | "<" | "==" | "!=" | ">=" | ">"
     addop                 = "+" | "-"
-    mulop                 = "*"| "/"| "%"
+    mulop                 = "*"| "/"| "%"| "٪"
   }`)
 
 
