@@ -4,8 +4,8 @@
 - Ohm without classes (add classes after project is complete without it)
 
 ## TODOs (later):
-- Analyzer
-- Generator
+- Add multiple var decs
+- Add api to translate var names
 - site to code in arabscript and it translates the code to javascript
 
 ## Introduction
