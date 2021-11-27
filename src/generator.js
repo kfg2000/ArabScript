@@ -3,21 +3,87 @@
 // Invoke generate(program) with the program node to get back the JavaScript
 // translation as a string.
 
+import request from 'request';
 
-export default function generate(program) {
+export default async function generate(program) {
+  let options = {
+        method: 'GET',
+        url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
+        qs: {text: 'Hi', to: 'en', from: 'ar'},
+        headers: {
+            'x-rapidapi-host': 'nlp-translation.p.rapidapi.com',
+            'x-rapidapi-key': '1cd79a6af9msh64d71fa9d63ea8dp1f72b3jsn5e9f790a3ac7',
+            useQueryString: true
+        }
+  };
   const output = []
-  var expStandalone = true
-  var isParam = false
+  const arToen = new Map()
+  const mappingTarget = new Map()
+  const mappingProperty = new Map()
+  let expStandalone = true
 
   // Variable and function names in JS will be suffixed with _1, _2, _3,
-  const targetName = (mapping => {
-    return entity => {
-      if (!mapping.has(entity)) {
-        mapping.set(entity, mapping.size + 1)
+//   const targetName = (mapping => () => {
+//     const getName = () => {
+//       if (!mapping.has(entity)) {
+//         mapping.set(entity, mapping.size + 1)
+//       }
+//       options.qs.text = entity.name
+//       res = request(options, function (error, response, body) {
+//           console.log(response)
+//       });
+//       return `var_${mapping.get(entity)}`
+//     }
+//     return getName()
+//   })(new Map())
+
+const getName = (entity) => {
+  return new Promise(function (resolve, reject) {
+    request(options, function (error, response, body) {
+        const parsed = JSON.parse(body)
+        if(parsed.status !== 200){
+            reject(body)
+        }
+
+        if(parsed.translated_text["en"] !== "NS"){
+            arToen.set(entity.name, parsed.translated_text["en"].toLowerCase())
+        } else {
+            arToen.set(entity.name, "var")
+        }
+        resolve(body)
+    });
+  });
+}
+
+// const getBody = (entity) => {
+//   return new Promise(function (resolve, reject) {
+//     request(options, function (error, response, body) {
+//         console.log(response.statusCode)
+//         if(response.statusCode === 200){
+//             resolve(body);
+//         } else {
+//             reject(body);
+//         }
+//     });
+//   });
+// }
+
+// const getName = async (entity) => {
+//     let body = await getBody(entity)
+//     console.log(body["translated_text"])
+//     return "var"
+// }
+
+  const targetName = async (entity) => {
+      if (!mappingTarget.has(entity)) {
+        if(!arToen.has(entity.name)){
+            options.qs.text = entity.name
+            await getName(entity)
+        }
+        mappingTarget.set(entity, mappingTarget.size + 1)
       }
-      return `var_${mapping.get(entity)}`
-    }
-  })(new Map())
+      return `${arToen.get(entity.name)}_${mappingTarget.get(entity)}`
+  }
 
   // Property names in JS will not be suffixed with _1, _2, _3, for now it will though
   const propertyName = (mapping => {
@@ -29,46 +95,46 @@ export default function generate(program) {
     }
   })(new Map())
 
-  const gen = node => {
+  const gen = async (node) => {
     // console.log(node)
-    return generators[node.constructor.name](node)
+    return await generators[node.constructor.name](node)
   }
 
   const generators = {
     // Key idea: when generating an expression, just return the JS string; when
     // generating a statement, write lines of translated JS to the output array.
 
-    Program(p) {
-      gen(p.statements)
+    async Program(p) {
+      await gen(p.statements)
     },
-    VariableDecInit(d) {
+    async VariableDecInit(d) {
       expStandalone = false
-      output.push(`${d.con ? 'const' : 'let'} ${gen(d.variable)} = ${gen(d.init)};`)
+      output.push(`${d.con ? 'const' : 'let'} ${await gen(d.variable)} = ${await gen(d.init)};`)
       expStandalone = true
     },
-    VariableDec(d) {
+    async VariableDec(d) {
       expStandalone = false
-      output.push(`let ${gen(d.variable)};`)
+      output.push(`let ${await gen(d.variable)};`)
       expStandalone = true
     },
-    Assignment(s) {
+    async Assignment(s) {
       expStandalone = false
-      output.push(`${gen(s.source)} = ${gen(s.target)};`)
+      output.push(`${await gen(s.source)} = ${await gen(s.target)};`)
       expStandalone = true
     },
-    Class(c) {
-        const className = targetName(c.class)
+    async Class(c) {
+        const className = await targetName(c.class)
         output.push(`class ${className}{`)
-        gen(c.constructorBody)
-        gen(c.body)
+        await gen(c.constructorBody)
+        await gen(c.body)
         output.push(`}`)
     },
-    Constructor(c) {
-        output.push(`constructor (${gen(c.params).join(", ")}){`)
-        gen(c.body)
+    async Constructor(c) {
+        output.push(`constructor (${(await gen(c.params)).join(", ")}){`)
+        await gen(c.body)
         output.push(`}`)
     },
-    This(e) {
+    async This(e) {
         const name = propertyName(e.variable)
         if (expStandalone) {
             expStandalone = false
@@ -78,26 +144,24 @@ export default function generate(program) {
             return `this.${name}`
         }
     },
-    NewObject(o) {
-        const className = targetName(o.className)
+    async NewObject(o) {
+        const className = await targetName(o.className)
         if (expStandalone) {
             expStandalone = false
-            output.push(`new ${className}(${gen(o.args).join(", ")});`)
+            output.push(`new ${className}(${(await gen(o.args)).join(", ")});`)
             expStandalone = true
         } else {
-            return `new ${className}(${gen(o.args).join(", ")})`
+            return `new ${className}(${(await gen(o.args)).join(", ")})`
         }
     },
-    FunctionDec(f) {
-      const funcName = targetName(f.function)
-      isParam = true
-      output.push(`function ${funcName}(${gen(f.params).join(", ")}) {`)
-      isParam = false
-      gen(f.body)
+    async FunctionDec(f) {
+      const funcName = await targetName(f.function)
+      output.push(`function ${funcName}(${(await gen(f.params)).join(", ")}) {`)
+      await gen(f.body)
       output.push("}")
     },
-    Call(c) {
-      const targetCode = `${gen(c.callee)}(${gen(c.args).join(", ")})`
+    async Call(c) {
+      const targetCode = `${await gen(c.callee)}(${(await gen(c.args)).join(", ")})`
       if (expStandalone) {
             expStandalone = false
             output.push(`${targetCode};`)
@@ -106,155 +170,155 @@ export default function generate(program) {
             return targetCode
         }
     },
-    Function(f) {
-      return targetName(f)
+    async Function(f) {
+      return await targetName(f)
     },
-    PrintStatement(p) {
+    async PrintStatement(p) {
       expStandalone = false
-      output.push(`console.log(${gen(p.argument)});`)
+      output.push(`console.log(${await gen(p.argument)});`)
       expStandalone = true
     },
-    TypeOfOperator(p) {
+    async TypeOfOperator(p) {
       if (expStandalone) {
         expStandalone = false
-        output.push(`typeof ${gen(p.argument)};`)
+        output.push(`typeof ${await gen(p.argument)};`)
         expStandalone = true
       } else {
-        return `typeof ${gen(p.argument)}`
+        return `typeof ${await gen(p.argument)}`
       }
     },
-    IfStatement(s) {
+    async IfStatement(s) {
       expStandalone = false
-      output.push(`if (${gen(s.cases[0].condition)}) {`)
+      output.push(`if (${await gen(s.cases[0].condition)}) {`)
       expStandalone = true
-      gen(s.cases[0].body)
+      await gen(s.cases[0].body)
       for (let i = 1; i < s.cases.length; i++) {
-        gen(s.cases[i])
+        await gen(s.cases[i])
       }
       if(s.elseBlock.length !== 0){
         output.push(`} else {`)
-        gen(s.elseBlock)
+        await gen(s.elseBlock)
       }
       output.push(`}`)
     },
-    IfCase(s) {
+    async IfCase(s) {
       expStandalone = false
-      output.push(`} else if (${gen(s.condition)}) {`)
+      output.push(`} else if (${await gen(s.condition)}) {`)
       expStandalone = true
-      gen(s.body)
+      await gen(s.body)
     },
-    WhileStatement(s) {
+    async WhileStatement(s) {
       expStandalone = false
-      output.push(`while (${gen(s.condition)}) {`)
+      output.push(`while (${await gen(s.condition)}) {`)
       expStandalone = true
-      gen(s.body)
+      await gen(s.body)
       output.push("}")
     },
-    ForStatement(s) {
-      gen(s.forArgs)
-      gen(s.body)
+    async ForStatement(s) {
+      await gen(s.forArgs)
+      await gen(s.body)
       output.push("}")
     },
-    ForOfStatement(s) {
-      const iterable = targetName(s.iterable)
-      const variable = targetName(s.variable)
+    async ForOfStatement(s) {
+      const iterable = await targetName(s.iterable)
+      const variable = await targetName(s.variable)
       output.push(
         `for (const ${variable} of ${iterable}) {`
       )
-      gen(s.body)
+      await gen(s.body)
       output.push("}")
     },
-    ForArgs(s) {
+    async ForArgs(s) {
       expStandalone = false
       output.push(
-        `for (let ${gen(s.variable)} = ${gen(s.exp)}; ${gen(s.condition)}; ${gen(
+        `for (let ${await gen(s.variable)} = ${await gen(s.exp)}; ${await gen(s.condition)}; ${await gen(
           s.sliceCrement
         )}) {`
       )
       expStandalone = true
     },
-    SwitchStatement(s) {
-      output.push(`switch(${gen(s.expression)}) {`)
+    async SwitchStatement(s) {
+      output.push(`switch(${await gen(s.expression)}) {`)
       for (let i = 0; i < s.cases.length; i++) {
-        gen(s.cases[i])
+        await gen(s.cases[i])
       }
       output.push(`default:`)
-      gen(s.defaultCase)
+      await gen(s.defaultCase)
       output.push(`}`)
     },
-    Case(s) {
-      output.push(`case ${gen(s.caseExp)}:`)
-      gen(s.statements)
+    async Case(s) {
+      output.push(`case ${await gen(s.caseExp)}:`)
+      await gen(s.statements)
     },
-    ReturnStatement(s) {
+    async ReturnStatement(s) {
       expStandalone = false
-      output.push(`return ${gen(s.returnValue)};`)
+      output.push(`return ${await gen(s.returnValue)};`)
       expStandalone = true
     },
     ShortReturnStatement(s) {
       output.push("return;")
     },
-    Ternary(e){
+    async Ternary(e){
       if (expStandalone) {
         expStandalone = false
-        output.push(`${gen(e.bool)} ? ${gen(e.expIfTrue)} : ${gen(e.expIfFalse)};`)
+        output.push(`${await gen(e.bool)} ? ${await gen(e.expIfTrue)} : ${await gen(e.expIfFalse)};`)
         expStandalone = true
         return
       }
-      return `${gen(e.bool)} ? ${gen(e.expIfTrue)} : ${gen(e.expIfFalse)}`
+      return `${await gen(e.bool)} ? ${await gen(e.expIfTrue)} : ${await gen(e.expIfFalse)}`
     },
-    BinaryExp(e) {
+    async BinaryExp(e) {
       const op = { "==": "===", "!=": "!==" }[e.op] ?? e.op
 
       if (["+=", "-="].includes(e.op)) {
         if (expStandalone) {
           expStandalone = false
-          output.push(`${gen(e.left)} ${op} ${gen(e.right)};`)
+          output.push(`${await gen(e.left)} ${op} ${await gen(e.right)};`)
           expStandalone = true
           return
         }
-        return `${gen(e.left)} ${op} ${gen(e.right)}`
+        return `${await gen(e.left)} ${op} ${await gen(e.right)}`
       }
       if (expStandalone) {
         expStandalone = false
-        output.push(`(${gen(e.left)} ${op} ${gen(e.right)});`)
+        output.push(`(${await gen(e.left)} ${op} ${await gen(e.right)});`)
         expStandalone = true
         return
       }
-      return `(${gen(e.left)} ${op} ${gen(e.right)})`
+      return `(${await gen(e.left)} ${op} ${await gen(e.right)})`
     },
-    UnaryExpression(e) {
+    async UnaryExpression(e) {
       if (expStandalone) {
         if (e.isprefix) {
           expStandalone = false
-          output.push(`${e.op}(${gen(e.operand)});`)
+          output.push(`${e.op}(${await gen(e.operand)});`)
           expStandalone = true
           return
         }
         expStandalone = false
-        output.push(`${gen(e.operand)}${e.op};`)
+        output.push(`${await gen(e.operand)}${e.op};`)
         expStandalone = true
         return
       }
       if (e.isprefix) {
-        return `${e.op}(${gen(e.operand)})`
+        return `${e.op}(${await gen(e.operand)})`
       }
-      return `${gen(e.operand)}${e.op}`
+      return `${await gen(e.operand)}${e.op}`
     },
-    ArrayLit(a) {
-      return `[${gen(a.elements).join(",")}]`
+    async ArrayLit(a) {
+      return `[${(await gen(a.elements)).join(",")}]`
     },
-    ObjLit(o) {
-      return `{${gen(o.keyValuePairs).join(", ")}}`
+    async ObjLit(o) {
+      return `{${(await gen(o.keyValuePairs)).join(", ")}}`
     },
-    ObjPair(p) {
-      return `${gen(p.key)}: ${gen(p.value)}`
+    async ObjPair(p) {
+      return `${await gen(p.key)}: ${await gen(p.value)}`
     },
-    MemberExpression(e) {
-      return `${gen(e.variable)}[${gen(e.exp)}]`
+    async MemberExpression(e) {
+      return `${await gen(e.variable)}[${await gen(e.exp)}]`
     },
-    PropertyExpression(e) {
-      return `${gen(e.object)}.${gen(e.field)}`
+    async PropertyExpression(e) {
+      return `${await gen(e.object)}.${await gen(e.field)}`
     },
     Continue(s) {
       output.push("continue;")
@@ -262,10 +326,10 @@ export default function generate(program) {
     Break(s) {
       output.push("break;")
     },
-    Variable(v) {
-      return targetName(v)
+    async Variable(v) {
+      return await targetName(v)
     },
-    IdentifierExpression(v) {
+    async IdentifierExpression(v) {
       return propertyName(v)
     },
     Bool(b) {
@@ -281,8 +345,12 @@ export default function generate(program) {
       // This ensures in JavaScript they get quotes!
       return JSON.stringify(e)
     },
-    Array(a) {
-      return a.map(gen)
+    async Array(a) {
+      let generatedArray = []
+      for(const item of a){
+          generatedArray.push(await gen(item))
+      }
+      return generatedArray
     },
     Undefined(u){
         return `undefined`
@@ -292,6 +360,6 @@ export default function generate(program) {
     }
   }
 
-  gen(program)
+  await gen(program)
   return output.join("\n")
 }
