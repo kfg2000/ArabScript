@@ -154,10 +154,10 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
     return new ast.VariableDec(identifier.tree(), false)
   },
   Statement_multDec(varType, multDecs, _end) {
-    return new ast.MultDec(multDecs.tree(), false)
+    return new ast.MultDec([...multDecs.tree()], false)
   },
   Statement_multDecConst(varType, multDecs, _end) {
-    return new ast.MultDec(multDecs.tree(), true)
+    return new ast.MultDec([...multDecs.tree()], true)
   },
   Statement_assignExp(variable, _eq, exp, _end) {
     return new ast.Assignment(variable.tree(), exp.tree())
@@ -187,13 +187,13 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
     return statements.tree()
   },
   IndividualDec(name, optionalExp){
-    return new ast.IndividualDec(name.tree(), optionalExp.tree());
+    return [name.tree(), optionalExp.tree()];
   },
   IndividualDecEq(_eq, exp){
     return exp.tree();
   },
   IndividualDecConst(name, _eq, exp){
-    return new ast.IndividualDec(name.tree(), exp.tree());
+    return [name.tree(), optionalExp.tree()];
   },
   ClassDec(_classBeginning, name, _left, constructorBody, body, _right) {
     return new ast.Class(

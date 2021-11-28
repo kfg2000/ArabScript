@@ -81,12 +81,6 @@ export class MultDec {
   }
 }
 
-export class IndividualDec {
-  constructor(variable, init) {
-    Object.assign(this, { variable, init })
-  }
-}
-
 export class Class {
   constructor(identifier, constructorBody, body) {
     Object.assign(this, { identifier, constructorBody, body })
