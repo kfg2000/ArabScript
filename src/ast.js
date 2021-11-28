@@ -75,6 +75,18 @@ export class Assignment {
   }
 }
 
+export class MultDec {
+  constructor(individualDecs, con) {
+    Object.assign(this, { individualDecs, con })
+  }
+}
+
+export class IndividualDec {
+  constructor(variable, init) {
+    Object.assign(this, { variable, init })
+  }
+}
+
 export class Class {
   constructor(identifier, constructorBody, body) {
     Object.assign(this, { identifier, constructorBody, body })

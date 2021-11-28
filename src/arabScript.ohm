@@ -1,8 +1,10 @@
 arabScript {
     Program               = Statement*
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
-                            | ("دع" | "متغير") id "؛"                                                     --varDec
+                            | ("دع" | "متغير") id "؛"                                               --varDec
                             | (This | Var ) "=" Exp "؛"   										    --assignExp
+                            | ("دع" | "متغير") ListOf<IndividualDec, "،"> "؛"                       --multDec
+                            | "ثابت" ListOf<IndividualConstDec, "،"> "؛"                            --multDecConst
                             | SwitchStatement
                             | ClassDec
                          	| FunctionCall "؛" 														--functionCall 
@@ -17,6 +19,9 @@ arabScript {
                             | break "؛" 															--break
                             | Exp "؛" 																--exp
     BeginToEnd			  = "{" Statement* "}"
+    IndividualDec         = id (IndividualDecEq)?
+    IndividualDecEq       = "=" Exp
+    IndividualConstDec    = id "=" Exp
     ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
     This                  = Var thisKeyword 
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd

@@ -8,8 +8,10 @@ import * as ast from "./ast.js"
 const grammar = ohm.grammar(String.raw`arabScript {
     Program               = Statement*
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
-                            | ("دع" | "متغير") id "؛"                                                     --varDec
+                            | ("دع" | "متغير") id "؛"                                               --varDec
                             | (This | Var ) "=" Exp "؛"   										    --assignExp
+                            | ("دع" | "متغير") ListOf<IndividualDec, "،"> "؛"                       --multDec
+                            | "ثابت" ListOf<IndividualConstDec, "،"> "؛"                            --multDecConst
                             | SwitchStatement
                             | ClassDec
                          	| FunctionCall "؛" 														--functionCall 
@@ -24,6 +26,9 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | break "؛" 															--break
                             | Exp "؛" 																--exp
     BeginToEnd			  = "{" Statement* "}"
+    IndividualDec         = id (IndividualDecEq)?
+    IndividualDecEq       = "=" Exp
+    IndividualConstDec    = id "=" Exp
     ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
     This                  = Var thisKeyword 
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
@@ -148,6 +153,12 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
   Statement_varDec(varType, identifier, _end) {
     return new ast.VariableDec(identifier.tree(), false)
   },
+  Statement_multDec(varType, multDecs, _end) {
+    return new ast.MultDec(multDecs.tree(), false)
+  },
+  Statement_multDecConst(varType, multDecs, _end) {
+    return new ast.MultDec(multDecs.tree(), true)
+  },
   Statement_assignExp(variable, _eq, exp, _end) {
     return new ast.Assignment(variable.tree(), exp.tree())
   },
@@ -174,6 +185,15 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
   },
   BeginToEnd(_left, statements, _right) {
     return statements.tree()
+  },
+  IndividualDec(name, optionalExp){
+    return new ast.IndividualDec(name.tree(), optionalExp.tree());
+  },
+  IndividualDecEq(_eq, exp){
+    return exp.tree();
+  },
+  IndividualDecConst(name, _eq, exp){
+    return new ast.IndividualDec(name.tree(), exp.tree());
   },
   ClassDec(_classBeginning, name, _left, constructorBody, body, _right) {
     return new ast.Class(
