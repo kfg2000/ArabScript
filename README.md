@@ -1,7 +1,7 @@
 # ArabScript
 
 ## Currently working on:
-- Ohm without classes (add classes after project is complete without it)
+- New Features
 
 ## TODOs (later):
 - Add multiple var decs
