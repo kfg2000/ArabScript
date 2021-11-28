@@ -18,82 +18,32 @@ export default async function generate(program) {
   };
   const output = []
   const arToen = new Map()
-  const mappingTarget = new Map()
-  const mappingProperty = new Map()
+  let current_count = 1;
   let expStandalone = true
 
-  // Variable and function names in JS will be suffixed with _1, _2, _3,
-//   const targetName = (mapping => () => {
-//     const getName = () => {
-//       if (!mapping.has(entity)) {
-//         mapping.set(entity, mapping.size + 1)
-//       }
-//       options.qs.text = entity.name
-//       res = request(options, function (error, response, body) {
-//           console.log(response)
-//       });
-//       return `var_${mapping.get(entity)}`
-//     }
-//     return getName()
-//   })(new Map())
 
 const getName = (entity) => {
   return new Promise(function (resolve, reject) {
     request(options, function (error, response, body) {
         const parsed = JSON.parse(body)
-        if(parsed.status !== 200){
-            reject(body)
-        }
-
-        if(parsed.translated_text["en"] !== "NS"){
-            arToen.set(entity.name, parsed.translated_text["en"].toLowerCase())
+        if(parsed.status === 200 && parsed.translated_text["en"] !== "NS"){
+            let varName = parsed.translated_text["en"].toLowerCase().replace(/ |&/g, '_')
+            arToen.set(entity.name, varName)
         } else {
-            arToen.set(entity.name, "var")
+            arToen.set(entity.name, "var_"+current_count)
+            current_count++
         }
         resolve(body)
     });
   });
 }
-
-// const getBody = (entity) => {
-//   return new Promise(function (resolve, reject) {
-//     request(options, function (error, response, body) {
-//         console.log(response.statusCode)
-//         if(response.statusCode === 200){
-//             resolve(body);
-//         } else {
-//             reject(body);
-//         }
-//     });
-//   });
-// }
-
-// const getName = async (entity) => {
-//     let body = await getBody(entity)
-//     console.log(body["translated_text"])
-//     return "var"
-// }
-
   const targetName = async (entity) => {
-      if (!mappingTarget.has(entity)) {
-        if(!arToen.has(entity.name)){
-            options.qs.text = entity.name
-            await getName(entity)
-        }
-        mappingTarget.set(entity, mappingTarget.size + 1)
+      if(!arToen.has(entity.name)){
+        options.qs.text = entity.name
+        await getName(entity)
       }
-      return `${arToen.get(entity.name)}_${mappingTarget.get(entity)}`
+      return `${arToen.get(entity.name)}`
   }
-
-  // Property names in JS will not be suffixed with _1, _2, _3, for now it will though
-  const propertyName = (mapping => {
-    return entity => {
-      if (!mapping.has(entity)) {
-        mapping.set(entity, mapping.size + 1)
-      }
-      return `property_${mapping.get(entity)}`
-    }
-  })(new Map())
 
   const gen = async (node) => {
     // console.log(node)
@@ -135,7 +85,7 @@ const getName = (entity) => {
         output.push(`}`)
     },
     async This(e) {
-        const name = propertyName(e.variable)
+        const name = await targetName(e.variable)
         if (expStandalone) {
             expStandalone = false
             output.push(`this.${name};`)
@@ -330,7 +280,7 @@ const getName = (entity) => {
       return await targetName(v)
     },
     async IdentifierExpression(v) {
-      return propertyName(v)
+      return await targetName(v)
     },
     Bool(b) {
       return `${b.value}`
