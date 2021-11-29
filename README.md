@@ -37,7 +37,7 @@ TBD
 | JavaScript                  | arabScript                    |
 | --------------------------- | ----------------------------- |
 | let x = 10;                 | ١٠؛ = x دع                    |
-| var y = "Lemons are great"; | ؛"Lemons are great" = y متغير |
+| var y = "hi";               | ؛"hi" = y متغير               |
 | const z = 4.20;             | ٤.٢٠؛ = z ثابت                |
 
 
