@@ -4,7 +4,7 @@
 - New Features
 
 ## TODOs (later):
-- Add multiple var decs
+- Fix api call issue where if 2 arabic words have the same english meaning (add suffixes)
 - Add try catch
 - site to code in arabscript and it translates the code to javascript
 
