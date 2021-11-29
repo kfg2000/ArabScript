@@ -151,7 +151,6 @@ class Context {
       this.add(dec[0].name, dec[0])
       return dec
     })
-    console.log(m)
     return m
   }
   Class(c) {

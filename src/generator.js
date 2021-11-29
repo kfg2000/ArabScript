@@ -18,7 +18,15 @@ export default async function generate(program) {
   };
   const output = []
   const arToen = new Map()
-  let current_count = 1;
+  let current_var_count = 1;
+  let name_count = { "var": 0 }
+  const update_name_count = (name) => {
+      if(name in name_count){
+        name_count[name] = name_count[name] + 1
+      } else {
+        name_count[name] = 0
+      }
+  }
   let expStandalone = true
 
 
@@ -27,13 +35,15 @@ const getName = (entity) => {
     request(options, function (error, response, body) {
         const parsed = JSON.parse(body)
         const english = /^[A-Za-z0-9]*$/;
+        let varName
         if(parsed.status === 200 && parsed.translated_text["en"] !== "NS" && english.test(parsed.translated_text["en"])){
-            let varName = parsed.translated_text["en"].toLowerCase().replace(/ |&/g, '_')
-            arToen.set(entity.name, varName)
+            varName = parsed.translated_text["en"].toLowerCase().replace(/ |&/g, '_')
         } else {
-            arToen.set(entity.name, "var_"+current_count)
-            current_count++
+            varName = "var"
         }
+        update_name_count(varName)
+        varName = varName + (name_count[varName] ? "_" + name_count[varName] : "")
+        arToen.set(entity.name, varName)
         resolve(body)
     });
   });
@@ -47,7 +57,6 @@ const getName = (entity) => {
   }
 
   const gen = async (node) => {
-    // console.log(node)
     return await generators[node.constructor.name](node)
   }
 

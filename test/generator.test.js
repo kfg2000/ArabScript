@@ -18,6 +18,23 @@ const fixtures = [
     `,
   },
   {
+    name: "name test",
+    source: `
+      دع عدد؛
+      دع ت؛
+      دع م؛
+      دع رقم؛
+      دع ة؛
+    `,
+    expected: dedent`
+      let number;
+      let var_1;
+      let var_2;
+      let number_1;
+      let var_3;
+    `,
+  },
+  {
     name: "declaration then assignment and constant",
     source: `
         دع ا؛
