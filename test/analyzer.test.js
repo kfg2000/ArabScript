@@ -7,6 +7,8 @@ const semanticChecks = [
   ["constant declarations", "ثابت ط = -(١.١**٢)-٣٩/٢٣؛"],
   ["variable declarations", "متغير اسم = \"خالد\"؛"],
   ["variable declarations 2", "دع طس&شش؛"],
+  ["mult variable declarations", "دع م، خ=١، ج=٣؛"],
+  ["mult variable const declarations", "ثابت م=١، خ=١، ج=٣؛"],
   ["variable declarations of null", "دع طس&شش = نل؛"],
   ["variable declarations of undefined", "دع طس&شش = مجهول؛"],
   ["assignment", "دع طس&شش؛ طس&شش = ٢؛"],

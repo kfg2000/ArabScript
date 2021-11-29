@@ -10,8 +10,8 @@ const grammar = ohm.grammar(String.raw`arabScript {
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
                             | ("دع" | "متغير") id "؛"                                               --varDec
                             | (This | Var ) "=" Exp "؛"   										    --assignExp
-                            | ("دع" | "متغير") ListOf<IndividualDec, "،"> "؛"                       --multDec
-                            | "ثابت" ListOf<IndividualConstDec, "،"> "؛"                            --multDecConst
+                            | ("دع" | "متغير") (ArrayIndividualDec)* IndividualDec "؛"              --multDec
+                            | "ثابت" (ArrayIndividualConst)* IndividualConstDec "؛"                 --multDecConst
                             | SwitchStatement
                             | ClassDec
                          	| FunctionCall "؛" 														--functionCall 
@@ -29,6 +29,8 @@ const grammar = ohm.grammar(String.raw`arabScript {
     IndividualDec         = id (IndividualDecEq)?
     IndividualDecEq       = "=" Exp
     IndividualConstDec    = id "=" Exp
+    ArrayIndividualDec    = IndividualDec "،"
+    ArrayIndividualConst  = IndividualConstDec "،"
     ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
     This                  = Var thisKeyword 
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
@@ -153,11 +155,11 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
   Statement_varDec(varType, identifier, _end) {
     return new ast.VariableDec(identifier.tree(), false)
   },
-  Statement_multDec(varType, multDecs, _end) {
-    return new ast.MultDec([...multDecs.tree()], false)
+  Statement_multDec(varType, multDecs, lastDec, _end) {
+    return new ast.MultDec([...multDecs.tree(), lastDec.tree()], false)
   },
-  Statement_multDecConst(varType, multDecs, _end) {
-    return new ast.MultDec([...multDecs.tree()], true)
+  Statement_multDecConst(varType, multDecs, lastDec, _end) {
+    return new ast.MultDec([...multDecs.tree(), lastDec.tree()], true)
   },
   Statement_assignExp(variable, _eq, exp, _end) {
     return new ast.Assignment(variable.tree(), exp.tree())
@@ -187,13 +189,23 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
     return statements.tree()
   },
   IndividualDec(name, optionalExp){
-    return [name.tree(), optionalExp.tree()];
+    let exp = optionalExp.tree()[0]
+    if(exp === undefined){
+        exp = new ast.Undefined()
+    }
+    return [name.tree(), exp];
   },
   IndividualDecEq(_eq, exp){
     return exp.tree();
   },
-  IndividualDecConst(name, _eq, exp){
-    return [name.tree(), optionalExp.tree()];
+  IndividualConstDec(name, _eq, exp){
+    return [name.tree(), exp.tree()];
+  },
+  ArrayIndividualDec(dec, _comma){
+    return dec.tree()
+  },
+  ArrayIndividualConst(dec, _comma){
+    return dec.tree()
   },
   ClassDec(_classBeginning, name, _left, constructorBody, body, _right) {
     return new ast.Class(

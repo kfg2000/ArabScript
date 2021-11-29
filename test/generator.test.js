@@ -37,8 +37,19 @@ const fixtures = [
       (-(-((var_2 + var_1))) === 0);
       -(var_1);
     `,
+  },  
+  {
+    name: "multiple declarations",
+    source: `
+        دع م، خ=١، ج=٣؛
+        ثابت اسم=١، ح=١، ض=٣؛
+    `,
+    expected: dedent`
+      let var_1 = undefined, var_2 = 1, var_3 = 3;
+      const noun = 1, var_4 = 1, var_5 = 3;
+    `,
   },
-    {
+  {
     name: "Ternary",
     source: `
       متغير اسم = ١>٢ ؟ "خالد" : مجهول؛

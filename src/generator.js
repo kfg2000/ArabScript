@@ -26,7 +26,8 @@ const getName = (entity) => {
   return new Promise(function (resolve, reject) {
     request(options, function (error, response, body) {
         const parsed = JSON.parse(body)
-        if(parsed.status === 200 && parsed.translated_text["en"] !== "NS"){
+        const english = /^[A-Za-z0-9]*$/;
+        if(parsed.status === 200 && parsed.translated_text["en"] !== "NS" && english.test(parsed.translated_text["en"])){
             let varName = parsed.translated_text["en"].toLowerCase().replace(/ |&/g, '_')
             arToen.set(entity.name, varName)
         } else {
@@ -70,6 +71,17 @@ const getName = (entity) => {
     async Assignment(s) {
       expStandalone = false
       output.push(`${await gen(s.source)} = ${await gen(s.target)};`)
+      expStandalone = true
+    },
+    async MultDec(m) {
+      expStandalone = false
+      let outputString = `${m.con ? 'const' : 'let'} `
+      let length = m.individualDecs.length
+      for(let i = 0; i < length-1; i++){
+        outputString += `${await gen(m.individualDecs[i][0])} = ${await gen(m.individualDecs[i][1])}, `
+      }
+      outputString += `${await gen(m.individualDecs[length-1][0])} = ${await gen(m.individualDecs[length-1][1])};`
+      output.push(outputString)
       expStandalone = true
     },
     async Class(c) {

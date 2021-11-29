@@ -144,6 +144,16 @@ class Context {
     s.source.type = s.target.type
     return s
   }
+  MultDec(m) {
+    m.individualDecs.map((dec)=>{
+      dec[1] = this.analyze(dec[1])
+      dec[0] = new Variable(dec[0].name, m.con, dec[1].type)
+      this.add(dec[0].name, dec[0])
+      return dec
+    })
+    console.log(m)
+    return m
+  }
   Class(c) {
     c.class = new Variable(c.identifier.name, false, Type.CLASS)
     this.add(c.class.name, c.class)
