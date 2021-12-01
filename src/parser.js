@@ -12,6 +12,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | (This | Var ) "=" Exp "؛"   										    --assignExp
                             | ("دع" | "متغير") (ArrayIndividualDec)* IndividualDec "؛"              --multDec
                             | "ثابت" (ArrayIndividualConst)* IndividualConstDec "؛"                 --multDecConst
+                            | TryCatch
                             | SwitchStatement
                             | ClassDec
                          	| FunctionCall "؛" 														--functionCall 
@@ -31,6 +32,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
     IndividualConstDec    = id "=" Exp
     ArrayIndividualDec    = IndividualDec "،"
     ArrayIndividualConst  = IndividualConstDec "،"
+    TryCatch              = BeginToEnd catchKeyword "(" id ")" BeginToEnd
     ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
     This                  = Var thisKeyword 
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
@@ -126,6 +128,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
     undefinedKeyword      = "مجهول" ~alnum
     printKeyword          = "طبع" ~alnum
     typeofKeyword         = "نوع" ~alnum
+    catchKeyword          = "مسك" ~alnum
 
 
     Arguments             = ListOf<Exp, "،">
@@ -206,6 +209,13 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
   },
   ArrayIndividualConst(dec, _comma){
     return dec.tree()
+  },
+  TryCatch(tryBody, _catchKeyword, _left, catchVar, _right, catchBody){
+    return new ast.TryCatch(
+      tryBody.tree(),
+      catchVar.tree(),
+      catchBody.tree()
+    )
   },
   ClassDec(_classBeginning, name, _left, constructorBody, body, _right) {
     return new ast.Class(

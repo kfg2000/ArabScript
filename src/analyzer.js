@@ -153,6 +153,14 @@ class Context {
     })
     return m
   }
+  TryCatch(t) {
+    let newContext = this.newChild()
+    t.tryBody = newContext.analyze(t.tryBody)
+    newContext = this.newChild()
+    newContext.add(catchVar.name, new Variable(catchVar.name, false, Type.ANY))
+    t.catchBody = newContext.analyze(t.catchBody)
+    return t
+  }
   Class(c) {
     c.class = new Variable(c.identifier.name, false, Type.CLASS)
     this.add(c.class.name, c.class)

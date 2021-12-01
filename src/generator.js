@@ -4,6 +4,7 @@
 // translation as a string.
 
 import request from 'request';
+import { TryCatch } from './ast';
 
 export default async function generate(program) {
   let options = {
@@ -92,6 +93,13 @@ const getName = (entity) => {
       outputString += `${await gen(m.individualDecs[length-1][0])} = ${await gen(m.individualDecs[length-1][1])};`
       output.push(outputString)
       expStandalone = true
+    },
+    async TryCatch(t) {
+      output.push(`try {`)
+      await gen(t.tryBody)
+      output.push(`} catch(${await gen(t.catchVar)}) {`)
+      await gen(t.catchBody)
+      output.push(`}`)
     },
     async Class(c) {
         const className = await targetName(c.class)

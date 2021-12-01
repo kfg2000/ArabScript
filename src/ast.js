@@ -81,6 +81,12 @@ export class MultDec {
   }
 }
 
+export class TryCatch {
+  constructor(tryBody, catchVar, catchBody) {
+    Object.assign(this, { tryBody, catchVar, catchBody })
+  }
+}
+
 export class Class {
   constructor(identifier, constructorBody, body) {
     Object.assign(this, { identifier, constructorBody, body })
