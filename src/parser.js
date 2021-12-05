@@ -20,6 +20,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
                          	| FunctionDec
                             | IfStatement
                             | WhileStatement
+                            | DoWhileStatement
                             | ForStatement
                             | Print "؛"                                                             --print
                             | SliceCrement "؛"                                                      --slice
@@ -44,6 +45,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
     ElseStatement         = elseKeyword BeginToEnd
 
     WhileStatement        = whileKeyword "(" Exp ")" BeginToEnd
+    DoWhileStatement      = doKeyword BeginToEnd whileKeyword "(" Exp ")" "؛"
 
 	ForStatement          = forKeyword "(" ForArgs ")" BeginToEnd									 --forArgs
     					  | forKeyword "(" id Var ")" BeginToEnd									 --forOf
@@ -129,6 +131,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
     printKeyword          = "طبع" ~alnum
     typeofKeyword         = "نوع" ~alnum
     catchKeyword          = "مسك" ~alnum
+    doKeyword             = "افعل" ~alnum
 
 
     Arguments             = ListOf<Exp, "،">
@@ -259,6 +262,9 @@ const astBuilder = grammar.createSemantics().addOperation("tree", {
   },
   WhileStatement(_whileBeginning, _left, test, _right, body) {
     return new ast.WhileStatement(test.tree(), body.tree())
+  },
+  DoWhileStatement(_do, body, _whileBeginning, _left, test, _right, _end) {
+    return new ast.WhileStatement(test.tree(), body.tree(), true)
   },
   ForStatement_forArgs(_forBeginning, _left, forArgs, _right, body) {
     return new ast.ForStatement(forArgs.tree(), body.tree())

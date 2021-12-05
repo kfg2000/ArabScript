@@ -157,8 +157,8 @@ class Context {
     let newContext = this.newChild()
     t.tryBody = newContext.analyze(t.tryBody)
     newContext = this.newChild()
-    t.catchVar = new Variable(catchVar.name, false, Type.ANY)
-    newContext.add(catchVar.name, t.catchVar)
+    t.catchVar = new Variable(t.catchVar.name, false, Type.ANY)
+    newContext.add(t.catchVar.name, t.catchVar)
     t.catchBody = newContext.analyze(t.catchBody)
     return t
   }

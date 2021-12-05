@@ -5,6 +5,7 @@ arabScript {
                             | (This | Var ) "=" Exp "؛"   										    --assignExp
                             | ("دع" | "متغير") (ArrayIndividualDec)* IndividualDec "؛"              --multDec
                             | "ثابت" (ArrayIndividualConst)* IndividualConstDec "؛"                 --multDecConst
+                            | TryCatch
                             | SwitchStatement
                             | ClassDec
                          	| FunctionCall "؛" 														--functionCall 
@@ -12,6 +13,7 @@ arabScript {
                          	| FunctionDec
                             | IfStatement
                             | WhileStatement
+                            | DoWhileStatement
                             | ForStatement
                             | Print "؛"                                                             --print
                             | SliceCrement "؛"                                                      --slice
@@ -24,6 +26,7 @@ arabScript {
     IndividualConstDec    = id "=" Exp
     ArrayIndividualDec    = IndividualDec "،"
     ArrayIndividualConst  = IndividualConstDec "،"
+    TryCatch              = BeginToEnd catchKeyword "(" id ")" BeginToEnd
     ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
     This                  = Var thisKeyword 
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
@@ -35,6 +38,7 @@ arabScript {
     ElseStatement         = elseKeyword BeginToEnd
 
     WhileStatement        = whileKeyword "(" Exp ")" BeginToEnd
+    DoWhileStatement      = doKeyword BeginToEnd whileKeyword "(" Exp ")" "؛"
 
 	ForStatement          = forKeyword "(" ForArgs ")" BeginToEnd									 --forArgs
     					  | forKeyword "(" id Var ")" BeginToEnd									 --forOf
@@ -119,6 +123,8 @@ arabScript {
     undefinedKeyword      = "مجهول" ~alnum
     printKeyword          = "طبع" ~alnum
     typeofKeyword         = "نوع" ~alnum
+    catchKeyword          = "مسك" ~alnum
+    doKeyword             = "افعل" ~alnum
 
 
     Arguments             = ListOf<Exp, "،">

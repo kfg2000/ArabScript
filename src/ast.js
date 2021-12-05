@@ -135,8 +135,8 @@ export class IfCase {
 }
 
 export class WhileStatement {
-  constructor(condition, body) {
-    Object.assign(this, { condition, body })
+  constructor(condition, body, isDoWhile = false) {
+    Object.assign(this, { condition, body, isDoWhile })
   }
 }
 

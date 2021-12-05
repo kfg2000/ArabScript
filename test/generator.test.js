@@ -25,6 +25,7 @@ const fixtures = [
       دع م؛
       دع رقم؛
       دع ة؛
+      دع بنت&خالد؛
     `,
     expected: dedent`
       let number;
@@ -32,6 +33,7 @@ const fixtures = [
       let var_2;
       let number_1;
       let var_3;
+      let khaleds_daughter;
     `,
   },
   {
@@ -64,6 +66,23 @@ const fixtures = [
     expected: dedent`
       let var_1 = undefined, var_2 = 1, var_3 = 3;
       const noun = 1, var_4 = 1, var_5 = 3;
+    `,
+  },
+  {
+    name: "try catch test",
+    source: `
+      {
+        دع ا = ١؛
+      } مسك(ب){
+        طبع(ب)؛
+      }
+    `,
+    expected: dedent`
+      try {
+        let var_1 = 1;
+      } catch(var_2) {
+        console.log(var_2);
+      }
     `,
   },
   {
@@ -195,6 +214,25 @@ const fixtures = [
         }
         var_1 = (var_1 + 1);
       }
+    `,
+  },
+  {
+    name: "do while",
+    source: `
+        دع ا = ٠؛
+        افعل{
+            لو(ا٪٢==٠){
+                استمر؛
+            }
+        }بينما(ا<٥)؛
+    `,
+    expected: dedent`
+      let var_1 = 0;
+      do {
+        if (((var_1 ٪ 2) === 0)) {
+            continue;
+        }
+      } while ((var_1 < 5));
     `,
   },
   {

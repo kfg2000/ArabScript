@@ -4,13 +4,12 @@
 // translation as a string.
 
 import request from 'request';
-import { TryCatch } from './ast';
 
 export default async function generate(program) {
   let options = {
         method: 'GET',
         url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-        qs: {text: 'Hi', to: 'en', from: 'ar'},
+        qs: {text: '', to: 'en', from: 'ar'},
         headers: {
             'x-rapidapi-host': 'nlp-translation.p.rapidapi.com',
             'x-rapidapi-key': '1cd79a6af9msh64d71fa9d63ea8dp1f72b3jsn5e9f790a3ac7',
@@ -19,7 +18,7 @@ export default async function generate(program) {
   };
   const output = []
   const arToen = new Map()
-  let current_var_count = 1;
+  const varToName = new Map()
   let name_count = { "var": 0 }
   const update_name_count = (name) => {
       if(name in name_count){
@@ -30,15 +29,14 @@ export default async function generate(program) {
   }
   let expStandalone = true
 
-
-const getName = (entity) => {
+  const getName = (entity) => {
   return new Promise(function (resolve, reject) {
     request(options, function (error, response, body) {
         const parsed = JSON.parse(body)
-        const english = /^[A-Za-z0-9]*$/;
+        const english = /^[A-Za-z0-9&' ]*$/;
         let varName
         if(parsed.status === 200 && parsed.translated_text["en"] !== "NS" && english.test(parsed.translated_text["en"])){
-            varName = parsed.translated_text["en"].toLowerCase().replace(/ |&/g, '_')
+            varName = parsed.translated_text["en"].toLowerCase().replace(/'/g, '').replace(/ |& /g, '_')
         } else {
             varName = "var"
         }
@@ -51,7 +49,7 @@ const getName = (entity) => {
 }
   const targetName = async (entity) => {
       if(!arToen.has(entity.name)){
-        options.qs.text = entity.name
+        options.qs.text = entity.name.replace(/&/g, ' ')
         await getName(entity)
       }
       return `${arToen.get(entity.name)}`
@@ -187,11 +185,19 @@ const getName = (entity) => {
       await gen(s.body)
     },
     async WhileStatement(s) {
-      expStandalone = false
-      output.push(`while (${await gen(s.condition)}) {`)
-      expStandalone = true
-      await gen(s.body)
-      output.push("}")
+      if(s.isDoWhile){
+        output.push(`do {`)
+        await gen(s.body)
+        expStandalone = false
+        output.push(`} while (${await gen(s.condition)});`)
+        expStandalone = true
+      } else {
+        expStandalone = false
+        output.push(`while (${await gen(s.condition)}) {`)
+        expStandalone = true
+        await gen(s.body)
+        output.push("}")
+      }
     },
     async ForStatement(s) {
       await gen(s.forArgs)

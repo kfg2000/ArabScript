@@ -19,7 +19,10 @@ const semanticChecks = [
   ["using member exp", "دع دكش = {١:٢،\"عشرا\":١٠}؛ دكش[\"عشرا\"]+ دكش.عشرا؛"],
   ["using complex member exp", "دع دكش = {١:٢،\"عشرا\":[١،٢]}؛ دكش.عشرا[٠]؛"],
   ["increment and decrement", "دع ا = ١؛ ا++؛ ا--؛ ا+=١؛ ا-=١؛"],
-
+  [
+    "Try Catch",
+    "{ دع ا = ١؛ } مسك(ب){ طبع(ب)؛ }",
+  ],
   [
     "Class Definition",
     "صنف كلب { }",
