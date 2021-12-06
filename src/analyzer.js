@@ -160,6 +160,7 @@ class Context {
     t.catchVar = new Variable(t.catchVar.name, false, Type.ANY)
     newContext.add(t.catchVar.name, t.catchVar)
     t.catchBody = newContext.analyze(t.catchBody)
+    console.log(t)
     return t
   }
   Class(c) {

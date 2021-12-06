@@ -15,7 +15,7 @@ Prints to stdout according to <outputType>, which must be one of:
 async function compileFromFile(filename, outputType) {
   try {
     const buffer = await fs.readFile(filename)
-    console.log(compile(buffer.toString(), outputType))
+    console.log(await compile(buffer.toString(), outputType))
   } catch (e) {
     console.error(`${e}`)
     process.exitCode = 1

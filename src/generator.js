@@ -18,7 +18,6 @@ export default async function generate(program) {
   };
   const output = []
   const arToen = new Map()
-  const varToName = new Map()
   let name_count = { "var": 0 }
   const update_name_count = (name) => {
       if(name in name_count){
@@ -291,18 +290,30 @@ export default async function generate(program) {
       return `${await gen(e.operand)}${e.op}`
     },
     async ArrayLit(a) {
+      if(expStandalone){
+        output.push(`[${(await gen(a.elements)).join(",")}];`)
+      }
       return `[${(await gen(a.elements)).join(",")}]`
     },
     async ObjLit(o) {
+      if(expStandalone){
+        output.push(`{${(await gen(o.keyValuePairs)).join(", ")}};`)
+      }
       return `{${(await gen(o.keyValuePairs)).join(", ")}}`
     },
     async ObjPair(p) {
       return `${await gen(p.key)}: ${await gen(p.value)}`
     },
     async MemberExpression(e) {
+      if(expStandalone){
+        output.push(`${await gen(e.variable)}[${await gen(e.exp)}];`)
+      }
       return `${await gen(e.variable)}[${await gen(e.exp)}]`
     },
     async PropertyExpression(e) {
+      if(expStandalone){
+        output.push(`${await gen(e.object)}.${await gen(e.field)};`)
+      }
       return `${await gen(e.object)}.${await gen(e.field)}`
     },
     Continue(s) {
@@ -331,10 +342,12 @@ export default async function generate(program) {
       return JSON.stringify(e)
     },
     async Array(a) {
+      console.log(a)
       let generatedArray = []
       for(const item of a){
           generatedArray.push(await gen(item))
       }
+      console.log(generatedArray)
       return generatedArray
     },
     Undefined(u){
