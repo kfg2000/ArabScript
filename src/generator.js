@@ -342,12 +342,10 @@ export default async function generate(program) {
       return JSON.stringify(e)
     },
     async Array(a) {
-      console.log(a)
       let generatedArray = []
       for(const item of a){
           generatedArray.push(await gen(item))
       }
-      console.log(generatedArray)
       return generatedArray
     },
     Undefined(u){
