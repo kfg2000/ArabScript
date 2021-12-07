@@ -56,7 +56,7 @@ const fixtures = [
       (-(-((var_2 + var_1))) === 0);
       -(var_1);
     `,
-  },  
+  },
   {
     name: "multiple declarations",
     source: `
@@ -261,6 +261,25 @@ const fixtures = [
     `,
   },
   {
+    name: "recursion",
+    source: `
+        دالة فيبوناتشي(ن){
+            لو(ن <= ١){
+                عد ن؛
+            }
+            عد فيبوناتشي(ن-١) + فيبوناتشي(ن-٢)؛
+        }
+    `,
+    expected: dedent`
+      function fibonacci(var_1) {
+        if ((var_1 <= 1)) {
+          return var_1;
+        }
+        return (fibonacci((var_1 - 1)) + fibonacci((var_1 - 2)));
+      }
+    `,
+  },
+  {
     name: "arrays and objects",
     source: `
         دع ا = [١،٢،٣،٤]؛
@@ -274,6 +293,32 @@ const fixtures = [
     `,
   },
   {
+    name: "array exp standalone tests",
+    source: `
+        [١،٢،٣،٤]؛
+        دع ا = [١،٢،٣،٤]؛
+        ا[٢]؛
+    `,
+    expected: dedent`
+      [1,2,3,4];
+      let var_1 = [1,2,3,4];
+      var_1[2];
+    `,
+  },
+  {
+    name: "obj exp standalone tests",
+    source: `
+        {٠:صح، ١:خطا}؛
+        دع ب = {اسم:"خالد"، عمر:١٠}؛
+        ب.عمر؛
+    `,
+    expected: dedent`
+      {0: true, 1: false};
+      let var_1 = {noun: "خالد", age: 10};
+      var_1.age;
+    `,
+  },
+  {
     name: "for loops",
     source: `
         ل(دع ه = ١؛ ه>١٠؛ه++){
@@ -283,10 +328,6 @@ const fixtures = [
         ل(دع ه = ١؛ ه>١٠؛ه+=٥){
             طبع(ه)؛
             ه+=١؛
-        }
-        دع ارقام = [١،٢،٣،٤]؛
-        ل(رقم ارقام){
-            طبع(نوع(رقم))؛
         }
     `,
     expected: dedent`
@@ -298,6 +339,17 @@ const fixtures = [
         console.log(var_1);
         var_1 += 1;
       }
+    `,
+  },
+  {
+    name: "for of loops",
+    source: `
+        دع ارقام = [١،٢،٣،٤]؛
+        ل(رقم من ارقام){
+            طبع(نوع(رقم))؛
+        }
+    `,
+    expected: dedent`
       let numbers = [1,2,3,4];
       for (const number of numbers) {
           console.log(typeof number);

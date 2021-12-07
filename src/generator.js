@@ -3,58 +3,65 @@
 // Invoke generate(program) with the program node to get back the JavaScript
 // translation as a string.
 
-import request from 'request';
+import request from "request"
 
 export default async function generate(program) {
   let options = {
-        method: 'GET',
-        url: 'https://nlp-translation.p.rapidapi.com/v1/translate',
-        qs: {text: '', to: 'en', from: 'ar'},
-        headers: {
-            'x-rapidapi-host': 'nlp-translation.p.rapidapi.com',
-            'x-rapidapi-key': '1cd79a6af9msh64d71fa9d63ea8dp1f72b3jsn5e9f790a3ac7',
-            useQueryString: true
-        }
-  };
+    method: "GET",
+    url: "https://nlp-translation.p.rapidapi.com/v1/translate",
+    qs: { text: "", to: "en", from: "ar" },
+    headers: {
+      "x-rapidapi-host": "nlp-translation.p.rapidapi.com",
+      "x-rapidapi-key": "1cd79a6af9msh64d71fa9d63ea8dp1f72b3jsn5e9f790a3ac7",
+      useQueryString: true,
+    },
+  }
   const output = []
   const arToen = new Map()
-  let name_count = { "var": 0 }
-  const update_name_count = (name) => {
-      if(name in name_count){
-        name_count[name] = name_count[name] + 1
-      } else {
-        name_count[name] = 0
-      }
+  let name_count = { var: 0 }
+  const update_name_count = name => {
+    if (name in name_count) {
+      name_count[name] = name_count[name] + 1
+    } else {
+      name_count[name] = 0
+    }
   }
   let expStandalone = true
 
-  const getName = (entity) => {
-  return new Promise(function (resolve, reject) {
-    request(options, function (error, response, body) {
+  const getName = entity => {
+    return new Promise(function (resolve, reject) {
+      request(options, function (error, response, body) {
         const parsed = JSON.parse(body)
-        const english = /^[A-Za-z0-9&' ]*$/;
+        const english = /^[A-Za-z0-9&' ]*$/
         let varName
-        if(parsed.status === 200 && parsed.translated_text["en"] !== "NS" && english.test(parsed.translated_text["en"])){
-            varName = parsed.translated_text["en"].toLowerCase().replace(/'/g, '').replace(/ |& /g, '_')
+        if (
+          parsed.status === 200 &&
+          parsed.translated_text["en"] !== "NS" &&
+          english.test(parsed.translated_text["en"])
+        ) {
+          varName = parsed.translated_text["en"]
+            .toLowerCase()
+            .replace(/'/g, "")
+            .replace(/ |& /g, "_")
         } else {
-            varName = "var"
+          varName = "var"
         }
         update_name_count(varName)
         varName = varName + (name_count[varName] ? "_" + name_count[varName] : "")
         arToen.set(entity.name, varName)
         resolve(body)
-    });
-  });
-}
-  const targetName = async (entity) => {
-      if(!arToen.has(entity.name)){
-        options.qs.text = entity.name.replace(/&/g, ' ')
-        await getName(entity)
-      }
-      return `${arToen.get(entity.name)}`
+      })
+    })
+  }
+  const targetName = async entity => {
+    if (!arToen.has(entity.name)) {
+      options.qs.text = entity.name.replace(/&/g, " ")
+      await getName(entity)
+    }
+    return `${arToen.get(entity.name)}`
   }
 
-  const gen = async (node) => {
+  const gen = async node => {
     return await generators[node.constructor.name](node)
   }
 
@@ -67,7 +74,9 @@ export default async function generate(program) {
     },
     async VariableDecInit(d) {
       expStandalone = false
-      output.push(`${d.con ? 'const' : 'let'} ${await gen(d.variable)} = ${await gen(d.init)};`)
+      output.push(
+        `${d.con ? "const" : "let"} ${await gen(d.variable)} = ${await gen(d.init)};`
+      )
       expStandalone = true
     },
     async VariableDec(d) {
@@ -82,12 +91,16 @@ export default async function generate(program) {
     },
     async MultDec(m) {
       expStandalone = false
-      let outputString = `${m.con ? 'const' : 'let'} `
+      let outputString = `${m.con ? "const" : "let"} `
       let length = m.individualDecs.length
-      for(let i = 0; i < length-1; i++){
-        outputString += `${await gen(m.individualDecs[i][0])} = ${await gen(m.individualDecs[i][1])}, `
+      for (let i = 0; i < length - 1; i++) {
+        outputString += `${await gen(m.individualDecs[i][0])} = ${await gen(
+          m.individualDecs[i][1]
+        )}, `
       }
-      outputString += `${await gen(m.individualDecs[length-1][0])} = ${await gen(m.individualDecs[length-1][1])};`
+      outputString += `${await gen(m.individualDecs[length - 1][0])} = ${await gen(
+        m.individualDecs[length - 1][1]
+      )};`
       output.push(outputString)
       expStandalone = true
     },
@@ -99,36 +112,36 @@ export default async function generate(program) {
       output.push(`}`)
     },
     async Class(c) {
-        const className = await targetName(c.class)
-        output.push(`class ${className}{`)
-        await gen(c.constructorBody)
-        await gen(c.body)
-        output.push(`}`)
+      const className = await targetName(c.class)
+      output.push(`class ${className}{`)
+      await gen(c.constructorBody)
+      await gen(c.body)
+      output.push(`}`)
     },
     async Constructor(c) {
-        output.push(`constructor (${(await gen(c.params)).join(", ")}){`)
-        await gen(c.body)
-        output.push(`}`)
+      output.push(`constructor (${(await gen(c.params)).join(", ")}){`)
+      await gen(c.body)
+      output.push(`}`)
     },
     async This(e) {
-        const name = await targetName(e.variable)
-        if (expStandalone) {
-            expStandalone = false
-            output.push(`this.${name};`)
-            expStandalone = true
-        } else {
-            return `this.${name}`
-        }
+      const name = await targetName(e.variable)
+      if (expStandalone) {
+        expStandalone = false
+        output.push(`this.${name};`)
+        expStandalone = true
+      } else {
+        return `this.${name}`
+      }
     },
     async NewObject(o) {
-        const className = await targetName(o.className)
-        if (expStandalone) {
-            expStandalone = false
-            output.push(`new ${className}(${(await gen(o.args)).join(", ")});`)
-            expStandalone = true
-        } else {
-            return `new ${className}(${(await gen(o.args)).join(", ")})`
-        }
+      const className = await targetName(o.className)
+      if (expStandalone) {
+        expStandalone = false
+        output.push(`new ${className}(${(await gen(o.args)).join(", ")});`)
+        expStandalone = true
+      } else {
+        return `new ${className}(${(await gen(o.args)).join(", ")})`
+      }
     },
     async FunctionDec(f) {
       const funcName = await targetName(f.function)
@@ -137,14 +150,13 @@ export default async function generate(program) {
       output.push("}")
     },
     async Call(c) {
-      const targetCode = `${await gen(c.callee)}(${(await gen(c.args)).join(", ")})`
       if (expStandalone) {
-            expStandalone = false
-            output.push(`${targetCode};`)
-            expStandalone = true
-        } else {
-            return targetCode
-        }
+        expStandalone = false
+        output.push(`${await gen(c.callee)}(${(await gen(c.args)).join(", ")});`)
+        expStandalone = true
+      } else {
+        return `${await gen(c.callee)}(${(await gen(c.args)).join(", ")})`
+      }
     },
     async Function(f) {
       return await targetName(f)
@@ -171,7 +183,7 @@ export default async function generate(program) {
       for (let i = 1; i < s.cases.length; i++) {
         await gen(s.cases[i])
       }
-      if(s.elseBlock.length !== 0){
+      if (s.elseBlock.length !== 0) {
         output.push(`} else {`)
         await gen(s.elseBlock)
       }
@@ -184,7 +196,7 @@ export default async function generate(program) {
       await gen(s.body)
     },
     async WhileStatement(s) {
-      if(s.isDoWhile){
+      if (s.isDoWhile) {
         output.push(`do {`)
         await gen(s.body)
         expStandalone = false
@@ -206,18 +218,16 @@ export default async function generate(program) {
     async ForOfStatement(s) {
       const iterable = await targetName(s.iterable)
       const variable = await targetName(s.variable)
-      output.push(
-        `for (const ${variable} of ${iterable}) {`
-      )
+      output.push(`for (const ${variable} of ${iterable}) {`)
       await gen(s.body)
       output.push("}")
     },
     async ForArgs(s) {
       expStandalone = false
       output.push(
-        `for (let ${await gen(s.variable)} = ${await gen(s.exp)}; ${await gen(s.condition)}; ${await gen(
-          s.sliceCrement
-        )}) {`
+        `for (let ${await gen(s.variable)} = ${await gen(s.exp)}; ${await gen(
+          s.condition
+        )}; ${await gen(s.sliceCrement)}) {`
       )
       expStandalone = true
     },
@@ -242,14 +252,18 @@ export default async function generate(program) {
     ShortReturnStatement(s) {
       output.push("return;")
     },
-    async Ternary(e){
+    async Ternary(e) {
       if (expStandalone) {
         expStandalone = false
-        output.push(`${await gen(e.bool)} ? ${await gen(e.expIfTrue)} : ${await gen(e.expIfFalse)};`)
+        output.push(
+          `${await gen(e.bool)} ? ${await gen(e.expIfTrue)} : ${await gen(e.expIfFalse)};`
+        )
         expStandalone = true
         return
       }
-      return `${await gen(e.bool)} ? ${await gen(e.expIfTrue)} : ${await gen(e.expIfFalse)}`
+      return `${await gen(e.bool)} ? ${await gen(e.expIfTrue)} : ${await gen(
+        e.expIfFalse
+      )}`
     },
     async BinaryExp(e) {
       const op = { "==": "===", "!=": "!==" }[e.op] ?? e.op
@@ -290,14 +304,20 @@ export default async function generate(program) {
       return `${await gen(e.operand)}${e.op}`
     },
     async ArrayLit(a) {
-      if(expStandalone){
+      if (expStandalone) {
+        expStandalone = false
         output.push(`[${(await gen(a.elements)).join(",")}];`)
+        expStandalone = true
+        return
       }
       return `[${(await gen(a.elements)).join(",")}]`
     },
     async ObjLit(o) {
-      if(expStandalone){
+      if (expStandalone) {
+        expStandalone = false
         output.push(`{${(await gen(o.keyValuePairs)).join(", ")}};`)
+        expStandalone = true
+        return
       }
       return `{${(await gen(o.keyValuePairs)).join(", ")}}`
     },
@@ -305,14 +325,20 @@ export default async function generate(program) {
       return `${await gen(p.key)}: ${await gen(p.value)}`
     },
     async MemberExpression(e) {
-      if(expStandalone){
+      if (expStandalone) {
+        expStandalone = false
         output.push(`${await gen(e.variable)}[${await gen(e.exp)}];`)
+        expStandalone = true
+        return
       }
       return `${await gen(e.variable)}[${await gen(e.exp)}]`
     },
     async PropertyExpression(e) {
-      if(expStandalone){
+      if (expStandalone) {
+        expStandalone = false
         output.push(`${await gen(e.object)}.${await gen(e.field)};`)
+        expStandalone = true
+        return
       }
       return `${await gen(e.object)}.${await gen(e.field)}`
     },
@@ -343,17 +369,17 @@ export default async function generate(program) {
     },
     async Array(a) {
       let generatedArray = []
-      for(const item of a){
-          generatedArray.push(await gen(item))
+      for (const item of a) {
+        generatedArray.push(await gen(item))
       }
       return generatedArray
     },
-    Undefined(u){
-        return `undefined`
+    Undefined(u) {
+      return `undefined`
     },
-    Null(u){
-        return `null`
-    }
+    Null(u) {
+      return `null`
+    },
   }
 
   await gen(program)

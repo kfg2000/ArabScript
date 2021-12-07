@@ -15,10 +15,16 @@ const check = self => ({
     )
   },
   isBoolean() {
-    must([Type.BOOLEAN, Type.ANY].includes(self.type), `Expected a boolean, found ${self.type.name}`)
+    must(
+      [Type.BOOLEAN, Type.ANY].includes(self.type),
+      `Expected a boolean, found ${self.type.name}`
+    )
   },
   isInteger() {
-    must([Type.INT, Type.ANY].includes(self.type), `Expected an integer, found ${self.type.name}`)
+    must(
+      [Type.INT, Type.ANY].includes(self.type),
+      `Expected an integer, found ${self.type.name}`
+    )
   },
   isAnArrayOrDict() {
     must(
@@ -30,7 +36,10 @@ const check = self => ({
     must([Type.OBJ, Type.ANY].includes(self.type), "Object expected")
   },
   isIterable() {
-    must([Type.ARRAY, Type.OBJ, Type.STRING, Type.ANY].includes(self.type), "Iterable expected")
+    must(
+      [Type.ARRAY, Type.OBJ, Type.STRING, Type.ANY].includes(self.type),
+      "Iterable expected"
+    )
   },
   isNotAConstant() {
     must(!self.con, `Cannot assign to constant ${self.name}`)
@@ -48,7 +57,10 @@ const check = self => ({
     must([Type.FUNC, Type.ANY].includes(self.type), "Call of non-function")
   },
   isFromAClass() {
-    must([Type.CLASS, Type.ANY].includes(self.type), `${self.name} is not a class that exists`)
+    must(
+      [Type.CLASS, Type.ANY].includes(self.type),
+      `${self.name} is not a class that exists`
+    )
   },
   areAllDistinct() {
     must(
@@ -104,16 +116,26 @@ class Context {
     // except that certain fields can be overridden
     return new Context(this, configuration)
   }
-  getType(types){
-      if(types.includes(Type.STRING)||types.includes(Type.ARRAY)||types.includes(Type.OBJ)||types.includes(Type.FUNC)){
-        return Type.STRING
-      }
+  getType(types) {
+    if (
+      types.includes(Type.STRING) ||
+      types.includes(Type.ARRAY) ||
+      types.includes(Type.OBJ) ||
+      types.includes(Type.FUNC)
+    ) {
+      return Type.STRING
+    }
 
-      if(types.includes(Type.INT)||types.includes(Type.NUMBER)||types.includes(Type.BOOLEAN)||types.includes(Type.NONE)){
-        return Type.NUMBER
-      }
+    if (
+      types.includes(Type.INT) ||
+      types.includes(Type.NUMBER) ||
+      types.includes(Type.BOOLEAN) ||
+      types.includes(Type.NONE)
+    ) {
+      return Type.NUMBER
+    }
 
-      return Type.ANY
+    return Type.ANY
   }
   analyze(node) {
     return this[node.constructor.name](node)
@@ -145,7 +167,7 @@ class Context {
     return s
   }
   MultDec(m) {
-    m.individualDecs.map((dec)=>{
+    m.individualDecs.map(dec => {
       dec[1] = this.analyze(dec[1])
       dec[0] = new Variable(dec[0].name, m.con, dec[1].type)
       this.add(dec[0].name, dec[0])
@@ -172,7 +194,7 @@ class Context {
     return c
   }
   Constructor(c) {
-    let newContext = this.newChild({setParams: true})
+    let newContext = this.newChild({ setParams: true })
     c.params = newContext.analyze(c.params)
     newContext.setParams = false
     c.body = newContext.analyze(c.body)
@@ -238,7 +260,7 @@ class Context {
   }
   ForOfStatement(s) {
     let newContext = this.newChild({ inLoop: true })
-    
+
     s.iterable = this.analyze(s.iterable)
     check(s.iterable).isIterable()
     s.variable = new Variable(s.variable.name, false, Type.ANY)
@@ -283,18 +305,18 @@ class Context {
     return s
   }
 
-  PrintStatement(p){
+  PrintStatement(p) {
     p.argument = this.analyze(p.argument)
     return p
   }
 
-  TypeOfOperator(t){
+  TypeOfOperator(t) {
     t.argument = this.analyze(t.argument)
     t.type = Type.STRING
     return t
   }
 
-  Ternary(t){
+  Ternary(t) {
     t.bool = this.analyze(t.bool)
     check(t.bool).isBoolean()
 
@@ -313,7 +335,7 @@ class Context {
       if (e.op === "+=") {
         check(e.left).isNotAConstant()
       }
-      e.type = this.getType([e.left.type,e.right.type])
+      e.type = this.getType([e.left.type, e.right.type])
     } else if (["-", "*", "/", "%", "**", "-="].includes(e.op)) {
       if (e.op === "-=") {
         check(e.left).isNotAConstant()
@@ -349,7 +371,7 @@ class Context {
     a.type = Type.ARRAY
     return a
   }
-  
+
   ObjLit(a) {
     if (a.keyValuePairs.length > 0) {
       a.keyValuePairs = this.analyze(a.keyValuePairs)
@@ -363,7 +385,8 @@ class Context {
   }
 
   ObjPair(p) {
-    p.key = this.analyze(p.key)
+    let newContext = this.newChild({ partOfProp: true })
+    p.key = newContext.analyze(p.key)
     p.value = this.analyze(p.value)
     return p
   }
@@ -372,8 +395,8 @@ class Context {
     e.variable = this.analyze(e.variable)
     check(e.variable).isAnArrayOrDict()
     e.exp = this.newChild({ partOfProp: false }).analyze(e.exp)
-    if(e.variable.type == Type.ARRAY){
-        check(e.exp).isInteger()
+    if (e.variable.type == Type.ARRAY) {
+      check(e.exp).isInteger()
     }
     e.type = Type.ANY
     return e
@@ -400,7 +423,7 @@ class Context {
   IdentifierExpression(e) {
     // Id expressions get "replaced" with the variables they refer to
     e.type = Type.ANY
-    if(this.setParams){
+    if (this.setParams) {
       e.variable = new Variable(e.name, false, Type.ANY)
       this.add(e.name, e.variable)
       return e.variable
@@ -442,9 +465,9 @@ export default function analyze(node) {
   const initialContext = new Context()
 
   // Add in all the predefined identifiers from the stdlib module
-//   const library = { ...stdlib.types, ...stdlib.functions }
-//   for (const [name, type] of Object.entries(library)) {
-//     initialContext.add(name, type)
-//   }
+  //   const library = { ...stdlib.types, ...stdlib.functions }
+  //   for (const [name, type] of Object.entries(library)) {
+  //     initialContext.add(name, type)
+  //   }
   return initialContext.analyze(node)
 }

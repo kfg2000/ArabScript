@@ -16,12 +16,11 @@ export class Type {
   static NUMBER = new Type("number")
   static STRING = new Type("string")
   static FUNC = new Type("function")
-  static ARRAY = new Type("array")  
+  static ARRAY = new Type("array")
   static OBJ = new Type("object")
   static CLASS = new Type("class")
   static NONE = new Type("none")
   static ANY = new Type("any")
-
 
   // // Equivalence: when are two types the same
   // isEquivalentTo(target) {
@@ -174,7 +173,6 @@ export class Case {
     Object.assign(this, { caseExp, statements })
   }
 }
-
 
 export class ReturnStatement {
   constructor(returnValue) {

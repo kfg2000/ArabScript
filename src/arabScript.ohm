@@ -41,7 +41,7 @@ arabScript {
     DoWhileStatement      = doKeyword BeginToEnd whileKeyword "(" Exp ")" "؛"
 
 	ForStatement          = forKeyword "(" ForArgs ")" BeginToEnd									 --forArgs
-    					  | forKeyword "(" id Var ")" BeginToEnd									 --forOf
+    					  | forKeyword "(" id ofKeyword Var ")" BeginToEnd							 --forOf
     ForArgs               = varKeyword id "=" Exp "؛" Exp "؛" SliceCrement
     SliceCrement          = (id "+=" AddOp | id "-=" AddOp )                                         --binary
                             | (id"++" | id"--" )                                                     --postfix
@@ -125,6 +125,7 @@ arabScript {
     typeofKeyword         = "نوع" ~alnum
     catchKeyword          = "مسك" ~alnum
     doKeyword             = "افعل" ~alnum
+    ofKeyword             = "من" ~alnum
 
 
     Arguments             = ListOf<Exp, "،">
