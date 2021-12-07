@@ -8,9 +8,9 @@ arabScript {
                             | TryCatch
                             | SwitchStatement
                             | ClassDec
-                         	| FunctionCall "؛" 														--functionCall 
+                            | FunctionCall "؛" 														--functionCall
                             | ReturnStatement "؛" 													--return
-                         	| FunctionDec
+                            | FunctionDec
                             | IfStatement
                             | WhileStatement
                             | DoWhileStatement
@@ -28,7 +28,7 @@ arabScript {
     ArrayIndividualConst  = IndividualConstDec "،"
     TryCatch              = BeginToEnd catchKeyword "(" id ")" BeginToEnd
     ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
-    This                  = Var thisKeyword 
+    This                  = Var thisKeyword
     Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
     FunctionCall          = (This | Var ) "(" Arguments ")"
     FunctionDec           = functionKeyword id "(" Parameters ")" BeginToEnd
@@ -40,8 +40,8 @@ arabScript {
     WhileStatement        = whileKeyword "(" Exp ")" BeginToEnd
     DoWhileStatement      = doKeyword BeginToEnd whileKeyword "(" Exp ")" "؛"
 
-	ForStatement          = forKeyword "(" ForArgs ")" BeginToEnd									 --forArgs
-    					  | forKeyword "(" id ofKeyword Var ")" BeginToEnd							 --forOf
+    ForStatement          = forKeyword "(" ForArgs ")" BeginToEnd									 --forArgs
+                          | forKeyword "(" id ofKeyword Var ")" BeginToEnd							 --forOf
     ForArgs               = varKeyword id "=" Exp "؛" Exp "؛" SliceCrement
     SliceCrement          = (id "+=" AddOp | id "-=" AddOp )                                         --binary
                             | (id"++" | id"--" )                                                     --postfix
@@ -67,7 +67,7 @@ arabScript {
     Factor                = TypeOf
                             | id "(" Arguments ")" newKeyword                                        --newObj
                             | FunctionCall
-							| ("-") Factor                                                          --negation
+                            | ("-") Factor                                                          --negation
                             | ("!") Factor                                                           --boolNegation
                             | "(" Exp ")"                                                            --parens
                             | "[" Arguments "]"                                                      --arrayLit
@@ -91,7 +91,7 @@ arabScript {
                             | "\\u{" hexDigit hexDigit? hexDigit? hexDigit? hexDigit? hexDigit?  "}"  --hex
                             | ~"\"" ~"\\" any
     Var                   = Property
-    						| id
+                            | id
     Property              = Var "." Var                                                               --dotMemberExp
                             | Var "["Exp"]" 														  --memberExp
     varKeyword            = "دع" | "ثابت" | "متغير"
