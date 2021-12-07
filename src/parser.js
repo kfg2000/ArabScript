@@ -9,51 +9,51 @@ const grammar = ohm.grammar(String.raw`arabScript {
     Program               = Statement*
     Statement             = varKeyword id "="  Exp "؛"                                              --varDecInit
                             | ("دع" | "متغير") id "؛"                                               --varDec
-                            | (This | Var ) "=" Exp "؛"   										    --assignExp
+                            | (This | Var ) "=" Exp "؛"                                             --assignExp
                             | ("دع" | "متغير") (ArrayIndividualDec)* IndividualDec "؛"              --multDec
                             | "ثابت" (ArrayIndividualConst)* IndividualConstDec "؛"                 --multDecConst
                             | TryCatch
                             | SwitchStatement
                             | ClassDec
-                         	| FunctionCall "؛" 														--functionCall 
-                            | ReturnStatement "؛" 													--return
-                         	| FunctionDec
+                            | FunctionCall "؛"                                                      --functionCall
+                            | ReturnStatement "؛"                                                   --return
+                            | FunctionDec
                             | IfStatement
                             | WhileStatement
                             | DoWhileStatement
                             | ForStatement
                             | Print "؛"                                                             --print
                             | SliceCrement "؛"                                                      --slice
-                            | continue "؛" 															--continue
-                            | break "؛" 															--break
-                            | Exp "؛" 																--exp
-    BeginToEnd			  = "{" Statement* "}"
+                            | continue "؛"                                                          --continue
+                            | break "؛"                                                             --break
+                            | Exp "؛"                                                               --exp
+    BeginToEnd            = "{" Statement* "}"
     IndividualDec         = id (IndividualDecEq)?
     IndividualDecEq       = "=" Exp
     IndividualConstDec    = id "=" Exp
     ArrayIndividualDec    = IndividualDec "،"
     ArrayIndividualConst  = IndividualConstDec "،"
     TryCatch              = BeginToEnd catchKeyword "(" id ")" BeginToEnd
-    ClassDec			  = classKeyword id "{" Constructor? Statement* "}"
-    This                  = Var thisKeyword 
-    Constructor			  = constructorKeyword "(" Parameters ")" BeginToEnd
+    ClassDec              = classKeyword id "{" Constructor? Statement* "}"
+    This                  = Var thisKeyword
+    Constructor           = constructorKeyword "(" Parameters ")" BeginToEnd
     FunctionCall          = (This | Var ) "(" Arguments ")"
     FunctionDec           = functionKeyword id "(" Parameters ")" BeginToEnd
     ReturnStatement       = returnKeyword Exp?
-    IfStatement			  = ifKeyword "(" Exp ")" BeginToEnd ElseifStatement* ElseStatement?
+    IfStatement           = ifKeyword "(" Exp ")" BeginToEnd ElseifStatement* ElseStatement?
     ElseifStatement       = elseifKeyword "(" Exp ")" BeginToEnd
     ElseStatement         = elseKeyword BeginToEnd
 
     WhileStatement        = whileKeyword "(" Exp ")" BeginToEnd
     DoWhileStatement      = doKeyword BeginToEnd whileKeyword "(" Exp ")" "؛"
 
-	ForStatement          = forKeyword "(" ForArgs ")" BeginToEnd									 --forArgs
-    					  | forKeyword "(" id ofKeyword Var ")" BeginToEnd							 --forOf
+    ForStatement          = forKeyword "(" ForArgs ")" BeginToEnd                                     --forArgs
+                            | forKeyword "(" id ofKeyword Var ")" BeginToEnd                             --forOf
     ForArgs               = varKeyword id "=" Exp "؛" Exp "؛" SliceCrement
     SliceCrement          = (id "+=" AddOp | id "-=" AddOp )                                         --binary
                             | (id"++" | id"--" )                                                     --postfix
     SwitchStatement       = switchKeyword "("Var")" "{" Case+ Defaultcase? "}"
-    Case             	  = caseKeyword Exp ":" Statement*
+    Case                  = caseKeyword Exp ":" Statement*
     Defaultcase           = defaultKeyword ":" Statement*
 
     Print                 = printKeyword "("Exp")"
@@ -74,11 +74,11 @@ const grammar = ohm.grammar(String.raw`arabScript {
     Factor                = TypeOf
                             | id "(" Arguments ")" newKeyword                                        --newObj
                             | FunctionCall
-							| ("-") Factor                                                          --negation
+                            | ("-") Factor                                                           --negation
                             | ("!") Factor                                                           --boolNegation
                             | "(" Exp ")"                                                            --parens
                             | "[" Arguments "]"                                                      --arrayLit
-                            | "{" DictValues "}" 													 --objLit
+                            | "{" DictValues "}"                                                     --objLit
                             | numlit
                             | stringlit
                             | boollit
@@ -86,7 +86,7 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | undefinedKeyword
                             | This
                             | Var
-    digit				  += "١"|"٧"|"٦"|"٥"|"٤"|"٣"|"٢"|"٩"|"٠"
+    digit                 += "١"|"٧"|"٦"|"٥"|"٤"|"٣"|"٢"|"٩"|"٠"
     numlit                = digit+ "." digit+                                                        --float
                             | digit+                                                                 --int
     boollit               = "صح" | "خطا"
@@ -98,9 +98,9 @@ const grammar = ohm.grammar(String.raw`arabScript {
                             | "\\u{" hexDigit hexDigit? hexDigit? hexDigit? hexDigit? hexDigit?  "}"  --hex
                             | ~"\"" ~"\\" any
     Var                   = Property
-    						| id
+                            | id
     Property              = Var "." Var                                                               --dotMemberExp
-                            | Var "["Exp"]" 														  --memberExp
+                            | Var "["Exp"]"                                                           --memberExp
     varKeyword            = "دع" | "ثابت" | "متغير"
     keyword               = varKeyword | boollit | break | caseKeyword | defaultKeyword | elseKeyword
                             | elseifKeyword | forKeyword | functionKeyword | ifKeyword | returnKeyword
@@ -112,9 +112,9 @@ const grammar = ohm.grammar(String.raw`arabScript {
 
     break                 = "قف" ~alnum
     continue              = "استمر" ~alnum
-    classKeyword		  = "صنف" ~alnum
+    classKeyword          = "صنف" ~alnum
     newKeyword            = "جديد" ~alnum
-    thisKeyword		      = "هذا" ~alnum
+    thisKeyword           = "هذا" ~alnum
     constructorKeyword    = "منشئ" ~alnum
     caseKeyword           = "حالة" ~alnum
     defaultKeyword        = "خلاف ذلك" ~alnum
