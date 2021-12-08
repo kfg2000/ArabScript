@@ -48,25 +48,29 @@ TBD
 | ----------- | ----------------- |
 | break       | قف                |
 | case        | حالة              |
+| catch       | مسك               |
 | class       | صنف               |
 | const       | ثابت              |
 | constructor | منشئ              |
 | continue    | استمر             |
-| default     | خلاف ذلك          |
+| default     | خلاف ذلك           |
+| do          | افعل              |
 | else        | آخر               |
 | else if     | ولو               |
 | false       | خطا               |
-| for         | ()ل               |
+| for         | ل                 |
 | function    | دالة              |
 | if          | لو                |
 | let         | دع                |
 | new         | جديد              |
-| null        | نل (could change) |
+| null        | نل                |
+| of          | من                |
+| print       | طبع               |
 | return      | عد                |
 | switch      | تبديل             |
 | this        | هذا               |
 | true        | صح                |
-| try         | جرب               |
+| typeof      | نوع               |
 | undefiend   | مجهول             |
 | var         | متغير             |
 | while       | بينما             |
