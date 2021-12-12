@@ -133,6 +133,7 @@ typeof a;
 <td>
 
 ```JavaScript
+
 	let var_1 = {};
     try {
         var_1.feature.feature;
@@ -167,6 +168,7 @@ typeof a;
 <td>
 
 ```JavaScript
+
 	let noun = "خالد";
     if ((noun === "خالد")) {
         console.log("What a lad");
