@@ -134,7 +134,7 @@ typeof a;
 
 ```JavaScript
 
-	let var_1 = {};
+    let var_1 = {};
     try {
         var_1.feature.feature;
     } catch(mistake) {
