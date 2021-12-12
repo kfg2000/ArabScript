@@ -131,16 +131,20 @@ typeof a;
 </tr>
 <tr>
 <td>
-<pre>
-    let var_1 = {};
+
+```JavaScript
+	let var_1 = {};
     try {
         var_1.feature.feature;
     } catch(mistake) {
         onsole.log(mistake);
     }
-</pre>
+
+
+```
 
 </td>
+
 <td dir="rtl">
     <pre>
     دع ا = {}؛
