@@ -169,7 +169,7 @@ typeof a;
 
 ```JavaScript
 
-let noun = "خالد";
+    let noun = "خالد";
     if ((noun === "خالد")) {
         console.log("What a lad");
     } else if (((noun === "نور") || (noun === "بدر"))) {
