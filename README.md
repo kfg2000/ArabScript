@@ -1,8 +1,13 @@
 # ArabScript
+![Logo](logo.png)
 
 ## Introduction
 
-TBD
+One of my biggest insecurities is the fact that I cannot really speak arabic, at least in comparison to my peers back home. My arabic is broken and I instinctively refrain from speaking in it because I feel embarrassed. This allows me to sympathize with Arabs who cannot speak english. I believe there is an untapped potential from the arab communities to do wonderful things in the field of computer science, but they are restricted because of the language barrier. As such, I have decided to spend this semester working on ArabScript, an arabic programming language.
+
+
+There are two people in particular that I would like to thank. First, Dr. Ray Toal for mentoring and teaching me; without him, I could never do such an amazing project. And the second person I’d like to thank is, my best friend, Omar Abdulatif; since I cannot speak arabic, I had him help me design the syntax so that it could be in classical arabic. The reason why we want it to be written with classical arabic is because we want our audience to be broad and not limited to people who speak in certain dialects.
+
 
 ## Features
 
