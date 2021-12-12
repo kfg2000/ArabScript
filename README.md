@@ -182,7 +182,7 @@ typeof a;
 </td>
 <td dir="rtl"> 
 	<pre>
-    
+
 	دع اسم = "خالد"؛
     لو(اسم == "خالد"){
         طبع("What a lad")؛
@@ -391,3 +391,109 @@ khaled.bless();
 </td>
 </tr>
 </table>
+
+## Example Programs
+
+### Hello World
+<table>
+<tr>
+<td> <h3>JavaScript</h3> </td> <td> <h3>ArabScript</h3> </td>
+</tr>
+<tr>
+<td>
+
+```JavaScript
+console.log("Hello World");
+```
+
+</td>
+<td dir="rtl">
+    <pre>
+    طبع("Hello World")؛
+    </pre>
+</td>
+</tr>
+</table>
+
+### Add
+
+<table>
+<tr>
+<td> <h3>JavaScript</h3> </td> <td> <h3>ArabScript</h3> </td>
+</tr>
+<tr>
+<td>
+
+```JavaScript
+function add(var_1, var_2) {
+    return (var_1 + var_2);
+}
+```
+
+</td>
+<td dir="rtl">
+    <pre>
+    دالة اضف(ا،ب){
+        عد ا+ب؛
+    }
+    </pre>
+</td>
+</tr>
+</table>
+
+### Node Class
+
+<table>
+<tr>
+<td> <h3>JavaScript</h3> </td> <td> <h3>ArabScript</h3> </td>
+</tr>
+<tr>
+<td>
+
+```JavaScript
+class node{
+    constructor (data, next){
+        this.data = data;
+        this.next = next;
+    }
+    function next_set(next) {
+        this.next = next;
+    }
+    function data_set(data) {
+        this.data = data;
+    }
+    function get_next() {
+        return this.next;
+    }
+    function get_data() {
+        return this.data;
+    }
+}
+```
+
+</td>
+<td dir="rtl">
+    <pre>
+    صنف العقدة {
+        منشئ(البيانات، تالي){
+            البيانات هذا = البيانات؛
+            تالي هذا = تالي؛
+        }
+        دالة تعيين&تالي(تالي){
+            تالي هذا = تالي؛
+        }
+        دالة تعيين&البيانات(البيانات){
+            البيانات هذا = البيانات؛
+        }
+        دالة احصل&تالي(){
+            عد تالي هذا؛
+        }
+        دالة احصل&البيانات(){
+            عد البيانات هذا؛
+        }
+    }
+    </pre>
+</td>
+</tr>
+</table>
+
